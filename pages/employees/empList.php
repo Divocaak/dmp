@@ -1,5 +1,6 @@
 <?php
 require_once "../config.php";
+session_start();
 
 $e = "";
 $employees = [];
@@ -55,7 +56,9 @@ if ($result = mysqli_query($link, $sql)) {
         </thead>
         <tbody>
             <?php
+            unset($_SESSION["employees"]);
             for ($i = 0; $i < count($employees); $i++) {
+                $_SESSION["employees"][$employees[$i]["id"]] = $employees[$i];
                 echo '<tr>
                     <th scope="row">' . ($i + 1) . '</th>
                     <td>' . $employees[$i]["fname"] . ($employees[$i]["mname"] != null ? (" " . $employees[$i]["mname"]) : "") . " " . $employees[$i]["lname"] . '</td>
@@ -63,7 +66,7 @@ if ($result = mysqli_query($link, $sql)) {
                     <td><i class="bi bi-' . ($employees[$i]["student"] == "1" ? "check-circle-fill text-success" : "x-circle-fill text-danger") . '"></i></td>
                     <td><i class="bi bi-' . ($employees[$i]["maternity"] == "1" ? "check-circle-fill text-success" : "x-circle-fill text-danger") . '"></i></td>
                     <td><i class="bi bi-' . ($employees[$i]["hpp"] == "1" ? "check-circle-fill text-success" : "x-circle-fill text-danger") . '"></i></td>
-                    <td><a class="btn btn-outline-primary"><i class="bi bi-pencil"></i></a></td>
+                    <td><a class="btn btn-outline-primary" href="empAdd.php?empId=' . $employees[$i]["id"] . '"><i class="bi bi-pencil"></i></a></td>
                     <td><a class="btn btn-outline-danger deleteBtn" data-emp-id="' . $employees[$i]["id"] . '"><i class="bi bi-person-x"></i></a></td>
                 </tr>';
             }
@@ -89,19 +92,15 @@ if ($result = mysqli_query($link, $sql)) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
-        $(document).ready(function(){
+        $(document).ready(function() {
             var empId;
-            $(".deleteBtn").click(function(){
+            $(".deleteBtn").click(function() {
                 empId = $(this).data("empId");
                 $('#confDeleteModal').modal('show');
             });
 
-            $("#confDeleteBtn").click(function(){
+            $("#confDeleteBtn").click(function() {
                 window.location = "delEmpScript?id=" + empId;
-            });
-
-            $(".editBtn").click(function(){
-
             });
         });
     </script>

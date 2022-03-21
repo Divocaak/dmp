@@ -1,3 +1,5 @@
+<?php session_start(); ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -15,31 +17,31 @@
     </div>
     <form class="needs-validation" novalidate action=<?php echo $_GET["add"] ? "addEmpScript.php" : "editEmpScript.php";?> method="post">
     <div class="form-floating mb-3">
-        <input type="text" class="form-control" id="fname" name="fname" required maxlength="20">
+        <input type="text" class="form-control" id="fname" name="fname" required maxlength="20" value="<?php echo !$_GET["add"] ? $_SESSION["employees"][$_GET["empId"]]["fname"] : "";?>">
         <label for="fname">Křestní jméno</label>
     </div>
     <div class="form-floating mb-3">
-        <input type="text" class="form-control" id="mname" name="mname" maxlength="20">
+        <input type="text" class="form-control" id="mname" name="mname" maxlength="20" value="<?php echo !$_GET["add"] ? $_SESSION["employees"][$_GET["empId"]]["mname"] : "";?>">
         <label for="mname">Prostřední jméno</label>
     </div>
     <div class="form-floating mb-3">
-        <input type="text" class="form-control" id="lname" name="lname" required maxlength="20">
+        <input type="text" class="form-control" id="lname" name="lname" required maxlength="20" value="<?php echo !$_GET["add"] ? $_SESSION["employees"][$_GET["empId"]]["lname"] : "";?>">
         <label for="lname">Příjmení</label>
     </div>
     <div class="form-floating mb-3">
-        <input type="date" class="form-control" id="bdate" name="bdate" required>
+        <input type="date" class="form-control" id="bdate" name="bdate" required value="<?php echo !$_GET["add"] ? $_SESSION["employees"][$_GET["empId"]]["bdate"] : "";?>">
         <label for="bdate">Datum narození</label>
     </div>
     <div class="mb-3 form-check form-group text-start">
-        <input type="checkbox" class="form-check-input" id="student" name="student">
+        <input type="checkbox" class="form-check-input" id="student" name="student" <?php echo !$_GET["add"] ? ($_SESSION["employees"][$_GET["empId"]]["student"] ? "checked" : "") : "";?>>
         <label for="student">Status studenta</label>
     </div>
     <div class="mb-3 form-check form-group text-start">
-        <input type="checkbox" class="form-check-input" id="maternity" name="maternity">
+        <input type="checkbox" class="form-check-input" id="maternity" name="maternity" <?php echo !$_GET["add"] ? ($_SESSION["employees"][$_GET["empId"]]["maternity"] ? "checked" : "") : "";?>>
         <label for="maternity">Mateřská dovolená</label>
     </div>
     <div class="mb-3 form-check form-group text-start">
-        <input type="checkbox" class="form-check-input" id="hpp" name="hpp">
+        <input type="checkbox" class="form-check-input" id="hpp" name="hpp" <?php echo !$_GET["add"] ? ($_SESSION["employees"][$_GET["empId"]]["hpp"] ? "checked" : "") : "";?>>
         <label for="hpp">HPP</label>
     </div>
     <button type="submit" class="btn btn-outline-primary"><i class="pe-2 bi bi-<?php echo $_GET["add"] ? "person-plus" : "pencil";?>"></i><?php echo $_GET["add"] ? "Přidat" : "Upravit";?> zaměstnance</button>
