@@ -57,14 +57,16 @@ if ($result = mysqli_query($link, $sql)) {
             unset($_SESSION["documents"]);
             for ($i = 0; $i < count($documents); $i++) {
                 $_SESSION["documents"][$documents[$i]["id"]] = $documents[$i];
-                // TODO download doc
                 echo '<tr>
                     <th scope="row">' . ($i + 1) . '</th>
                     <td>' . $documents[$i]["label"] . '</td>
                     <td>' . $documents[$i]["dateStart"] . '</td>
                     <td>' . $documents[$i]["dateEnd"] . '</td>
                     <td>' . $documents[$i]["cashRate"] . '</td>
-                    <td><a class="btn btn-outline-info" href="uploads/' . $documents[$i]["fileName"] . '" target="_blank"><i class="bi bi-eye"></i> ' . $documents[$i]["fileName"] . '</a></td>
+                    <td>
+                        <a class="btn btn-outline-info" href="uploads/' . $documents[$i]["fileName"] . '" target="_blank"><i class="bi bi-eye"></i> ' . $documents[$i]["fileName"] . '</a>
+                        <a class="btn btn-outline-secondary" href="uploads/' . $documents[$i]["fileName"] . '" download><i class="bi bi-download"></i></a>
+                    </td>
                     <td><a class="btn btn-outline-primary" href="docForm.php?docId=' . $documents[$i]["id"] . '"><i class="bi bi-pencil"></i></a></td>
                     <td><a class="btn btn-outline-danger deleteBtn" data-doc-id="' . $documents[$i]["id"] . '"><i class="bi bi-file-earmark-x"></i></a></td>
                 </tr>';
