@@ -2,8 +2,8 @@
 require_once "../config.php";
 
 $e = "";
-$sql = "INSERT INTO employee (f_name, " . ($_POST["mname"] != "" ? "m_name, " : "") . " l_name, b_date, student, maternity, hpp)
-VALUES ('" . $_POST["fname"] . "'" . ($_POST["mname"] != "" ? (", '" . $_POST["mname"] . "'") : "") . ", '" . $_POST["lname"] . "', '" . $_POST["bdate"] . "', " . (isset($_POST["student"]) ? "1" : "0") . ", " . (isset($_POST["maternity"]) ? "1" : "0") . ", " . (isset($_POST["hpp"]) ? "1" : "0") . ");";
+$sql = "UPDATE employee SET f_name='" . $_POST["fname"] . "', m_name=" . ($_POST["mname"] != "" ? ("'" . $_POST["mname"] . "'") : "NULL") . ", l_name='" . $_POST["lname"] . "', b_date='" . $_POST["bdate"] . "', student=" . (isset($_POST["student"]) ? "1" : "0") . ", maternity=" . (isset($_POST["maternity"]) ? "1" : "0") . ", hpp=" . (isset($_POST["hpp"]) ? "1" : "0") . "
+WHERE id=" . $_GET["empId"] . ";";
 if (!mysqli_query($link, $sql)) {
     $e = $sql . "<br>" . mysqli_error($link);
 }

@@ -15,7 +15,7 @@
         <a class="btn btn-outline-secondary" href="empList.php"><i class="pe-2 bi bi-arrow-left-circle"></i>Zpět</a>
         <h1 class="d-inline-block ms-2"><?php echo $_GET["add"] ? "Přidat" : "Upravit";?> zaměstnance</h1>
     </div>
-    <form class="needs-validation" novalidate action=<?php echo $_GET["add"] ? "addEmpScript.php" : "editEmpScript.php";?> method="post">
+    <form class="needs-validation" novalidate action=<?php echo $_GET["add"] ? "addEmpScript.php" : "editEmpScript.php?empId=" . $_GET["empId"];?> method="post">
     <div class="form-floating mb-3">
         <input type="text" class="form-control" id="fname" name="fname" required maxlength="20" value="<?php echo !$_GET["add"] ? $_SESSION["employees"][$_GET["empId"]]["fname"] : "";?>">
         <label for="fname">Křestní jméno</label>

@@ -23,7 +23,7 @@ if (!mysqli_query($link, $sql)) {
     <h1 class="pb-3 ms-2">Odpověď ze serveru</h1>
     <p><?php echo $e == "" ? '<i class="pe-2 bi bi-check-circle-fill text-success"></i>Zaměstnanec byl uložen do systému' : ('<i class="pe-2 bi bi-exclamation-circle-fill text-danger"></i>' . $e) ?></p>
     <a class="btn btn-outline-secondary" href="empList.php"><i class="pe-2 bi bi-arrow-left-circle"></i>Přejít na seznam zaměstnanců</a>
-    <a class="btn btn-outline-secondary" href="empAdd.php"><i class="pe-2 bi bi-person-plus"></i>Přidat dalšího zaměstnance</a>
+    <a class="btn btn-outline-secondary" href="empForm.php"><i class="pe-2 bi bi-person-plus"></i>Přidat dalšího zaměstnance</a>
 </body>
 
 </html>

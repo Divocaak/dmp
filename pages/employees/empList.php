@@ -39,7 +39,7 @@ if ($result = mysqli_query($link, $sql)) {
         <a class="btn btn-outline-secondary" href="../../index.html"><i class="pe-2 bi bi-arrow-left-circle"></i>Zpět</a>
         <h1 class="d-inline-block ms-2">Seznam zaměstnanců</h1>
     </div>
-    <a class="btn btn-outline-success" href="empAdd.php?add=1"><i class="pe-2 bi bi-person-plus"></i>Přidat zaměstnance</a>
+    <a class="btn btn-outline-success" href="empForm.php?add=1"><i class="pe-2 bi bi-person-plus"></i>Přidat zaměstnance</a>
     <table class="mt-3 table table-striped table-hover">
         <caption>Seznam zaměstnanců</caption>
         <thead class="table-dark">
@@ -66,7 +66,7 @@ if ($result = mysqli_query($link, $sql)) {
                     <td><i class="bi bi-' . ($employees[$i]["student"] == "1" ? "check-circle-fill text-success" : "x-circle-fill text-danger") . '"></i></td>
                     <td><i class="bi bi-' . ($employees[$i]["maternity"] == "1" ? "check-circle-fill text-success" : "x-circle-fill text-danger") . '"></i></td>
                     <td><i class="bi bi-' . ($employees[$i]["hpp"] == "1" ? "check-circle-fill text-success" : "x-circle-fill text-danger") . '"></i></td>
-                    <td><a class="btn btn-outline-primary" href="empAdd.php?empId=' . $employees[$i]["id"] . '"><i class="bi bi-pencil"></i></a></td>
+                    <td><a class="btn btn-outline-primary" href="empForm.php?empId=' . $employees[$i]["id"] . '"><i class="bi bi-pencil"></i></a></td>
                     <td><a class="btn btn-outline-danger deleteBtn" data-emp-id="' . $employees[$i]["id"] . '"><i class="bi bi-person-x"></i></a></td>
                 </tr>';
             }
