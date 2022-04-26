@@ -1,11 +1,14 @@
 <?php
 require_once "../config.php";
 
-// TODO delete file
 $e = "";
-$sql = "DELETE FROM document WHERE id=" . $_GET["id"] . ";";
-if (!mysqli_query($link, $sql)) {
-    $e = $sql . "<br>" . mysqli_error($link);
+if (!unlink("uploads/" . $_GET["file"] . ".pdf")) {
+    $e = "Při odstraňování PDF smlouvy nastala chyba.";
+} else {
+    $sql = "DELETE FROM document WHERE id=" . $_GET["id"] . ";";
+    if (!mysqli_query($link, $sql)) {
+        $e = $sql . "<br>" . mysqli_error($link);
+    }
 }
 ?>
 
