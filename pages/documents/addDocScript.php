@@ -9,7 +9,6 @@ if (file_exists($target_file)) {
   $e = "Lze nahrát jen soubory formátu PDF. ";
 } else {
   if (move_uploaded_file($_FILES["documentFile"]["tmp_name"], $target_file)) {
-    // TODO insert without file extension
     $sql = "INSERT INTO document (label, date_start, " . ($_POST["dateEnd"] != "" ? "date_end, " : "") . " cash_rate, file_name)
     VALUES ('" . $_POST["label"] . "', '" . $_POST["dateStart"] . "'" . ($_POST["dateEnd"] != "" ? (", '" . $_POST["dateEnd"] . "'") : "") . ", " . $_POST["cashRate"] . ", '" . str_replace(".pdf", "", basename($_FILES["documentFile"]["name"])) . "');";
     if (!mysqli_query($link, $sql)) {

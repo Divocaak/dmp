@@ -57,7 +57,6 @@ if ($result = mysqli_query($link, $sql)) {
             unset($_SESSION["documents"]);
             for ($i = 0; $i < count($documents); $i++) {
                 $_SESSION["documents"][$documents[$i]["id"]] = $documents[$i];
-                // TODO add file extensions
                 echo '<tr>
                     <th scope="row">' . ($i + 1) . '</th>
                     <td>' . $documents[$i]["label"] . '</td>
