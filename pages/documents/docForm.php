@@ -34,8 +34,9 @@
     </div>
     <div class="mb-3 text-start">
         <label for="documentFile" class="form-label">Sken smlouvy</label>
-        <!-- TODO get file from filename when edit -->
-        <input type="file" class="form-control" id="documentFile" name="documentFile" required value="<?php echo !$_GET["add"] ? $_SESSION["documents"][$_GET["docId"]]["fileName"] : "";?>">
+        <?php echo !$_GET["add"] ? '<br>Nahraný dokument: <a class="btn btn-outline-info" href="uploads/' . $_SESSION["documents"][$_GET["docId"]]["fileName"] . '.pdf" target="_blank"><i class="bi bi-eye"></i> ' . $_SESSION["documents"][$_GET["docId"]]["fileName"] . '.pdf</a>' : "";?>
+        <!-- TODO upload new file btn? -->
+        <input type="file" class="form-control" id="documentFile" name="documentFile" required>
     </div>
     <button type="submit" class="btn btn-outline-primary"><i class="pe-2 bi bi-<?php echo $_GET["add"] ? "file-earmark-plus" : "pencil";?>"></i><?php echo $_GET["add"] ? "Přidat" : "Upravit";?> smlouvu</button>
 </form>
