@@ -34,15 +34,29 @@
     </div>
     <div class="mb-3 text-start">
         <label for="documentFile" class="form-label">Sken smlouvy</label>
-        <?php echo !$_GET["add"] ? '<br>Nahraný dokument: <a class="btn btn-outline-info" href="uploads/' . $_SESSION["documents"][$_GET["docId"]]["fileName"] . '.pdf" target="_blank"><i class="bi bi-eye"></i> ' . $_SESSION["documents"][$_GET["docId"]]["fileName"] . '.pdf</a>' : "";?>
+        <?php
+            if(!$_GET["add"]){
+                echo '<br>Nahraný dokument: <a class="btn btn-outline-info" href="uploads/' . $_SESSION["documents"][$_GET["docId"]]["fileName"] . '.pdf" target="_blank"><i class="bi bi-eye"></i> ' . $_SESSION["documents"][$_GET["docId"]]["fileName"] . '.pdf</a>';
+                echo '<div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="toggleFileInput">
+                        <label class="form-check-label" for="toggleFileInput">Chci změnit sken smlouvy</label>
+                    </div>';
+            }
+        ?>
         <!-- TODO upload new file btn? -->
-        <input type="file" class="form-control" id="documentFile" name="documentFile" required>
+        <input type="file" class="form-control" id="documentFile" name="documentFile" required <?php echo !$_GET["add"] ? "disabled" : "";?>>
     </div>
     <button type="submit" class="btn btn-outline-primary"><i class="pe-2 bi bi-<?php echo $_GET["add"] ? "file-earmark-plus" : "pencil";?>"></i><?php echo $_GET["add"] ? "Přidat" : "Upravit";?> smlouvu</button>
 </form>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script>
+    $(document).ready(function (){
+        $("#toggleFileInput").on("click", function(){
+            $("#documentFile").prop('disabled', !($(this).is(':checked')));
+        });
+    });
+
     (function() {
         "use strict"
         var forms = document.querySelectorAll(".needs-validation")
