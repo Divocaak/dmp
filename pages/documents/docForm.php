@@ -43,7 +43,6 @@
                     </div>';
             }
         ?>
-        <!-- TODO upload new file btn? -->
         <input type="file" class="form-control" id="documentFile" name="documentFile" required <?php echo !$_GET["add"] ? "disabled" : "";?>>
     </div>
     <button type="submit" class="btn btn-outline-primary"><i class="pe-2 bi bi-<?php echo $_GET["add"] ? "file-earmark-plus" : "pencil";?>"></i><?php echo $_GET["add"] ? "Přidat" : "Upravit";?> smlouvu</button>

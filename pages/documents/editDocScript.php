@@ -6,7 +6,14 @@ $e = "";
 $target_file = "uploads/" . basename($_FILES["documentFile"]["name"]);
 $oldFile = "uploads/" . $_SESSION["documents"][$_GET["docId"]]["fileName"] . ".pdf";
 
-if($_GET["overrideFile"]){
+
+print_r($_POST);
+echo "<br>";
+print_r($_GET);
+echo "<br>";
+print_r($_FILES);
+
+/* if($_GET["overrideFile"]){
   // delete saved file, if its not the same
   if($oldFile != $target_file){
     if (!unlink($oldFile)) {
@@ -28,17 +35,19 @@ if (file_exists($target_file)) {
 
 
 
-  /* $sql = "INSERT INTO document (label, date_start, " . ($_POST["dateEnd"] != "" ? "date_end, " : "") . " cash_rate, file_name)
-  VALUES ('" . $_POST["label"] . "', '" . $_POST["dateStart"] . "'" . ($_POST["dateEnd"] != "" ? (", '" . $_POST["dateEnd"] . "'") : "") . ", " . $_POST["cashRate"] . ", '" . str_replace(".pdf", "", basename($_FILES["documentFile"]["name"])) . "');";
-  if (!mysqli_query($link, $sql)) {
-      $e .= $sql . "<br>" . mysqli_error($link);
-  } */
   $sql = "UPDATE employee SET f_name='" . $_POST["fname"] . "', m_name=" . ($_POST["mname"] != "" ? ("'" . $_POST["mname"] . "'") : "NULL") . ", l_name='" . $_POST["lname"] . "', b_date='" . $_POST["bdate"] . "', student=" . (isset($_POST["student"]) ? "1" : "0") . ", maternity=" . (isset($_POST["maternity"]) ? "1" : "0") . ", hpp=" . (isset($_POST["hpp"]) ? "1" : "0") . "
   WHERE id=" . $_GET["empId"] . ";";
   if (!mysqli_query($link, $sql)) {
-      $e = $sql . "<br>" . mysqli_error($link);
+    $e = $sql . "<br>" . mysqli_error($link);
   }
-}
+} */
+
+
+/* $sql = "INSERT INTO document (label, date_start, " . ($_POST["dateEnd"] != "" ? "date_end, " : "") . " cash_rate, file_name)
+VALUES ('" . $_POST["label"] . "', '" . $_POST["dateStart"] . "'" . ($_POST["dateEnd"] != "" ? (", '" . $_POST["dateEnd"] . "'") : "") . ", " . $_POST["cashRate"] . ", '" . str_replace(".pdf", "", basename($_FILES["documentFile"]["name"])) . "');";
+if (!mysqli_query($link, $sql)) {
+    $e .= $sql . "<br>" . mysqli_error($link);
+} */
 ?>
 
 <!DOCTYPE html>
