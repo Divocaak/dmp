@@ -15,7 +15,7 @@
         <a class="btn btn-outline-secondary" href="docList.php"><i class="pe-2 bi bi-arrow-left-circle"></i>Zpět</a>
         <h1 class="d-inline-block ms-2"><?php echo $_GET["add"] ? "Přidat" : "Upravit";?> smlouvu</h1>
     </div>
-    <form class="needs-validation" novalidate action=<?php echo $_GET["add"] ? "addDocScript.php" : ("editDocScript.php?docId=" . $_GET["docId"] . "&oldDocName=" . $_SESSION["documents"][$_GET["docId"]]["fileName"]);?> method="post" enctype="multipart/form-data">
+    <form class="needs-validation" novalidate action=<?php echo $_GET["add"] ? "addDocScript.php" : ("editDocScript.php?docId=" . $_GET["docId"]);?> method="post" enctype="multipart/form-data">
     <div class="form-floating mb-3">
         <input type="text" class="form-control" id="label" name="label" required maxlength="100" value="<?php echo !$_GET["add"] ? $_SESSION["documents"][$_GET["docId"]]["label"] : "";?>">
         <label for="label">Název</label>
