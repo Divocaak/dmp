@@ -1,5 +1,5 @@
 <?php
-require_once "../config.php";
+require_once "../../config.php";
 
 $e = "";
 $sql = "INSERT INTO contract (id_employee, id_document, max_hours, max_cash" . ($_POST["note"] != "" ? ", note" : "") . ")

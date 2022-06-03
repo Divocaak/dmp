@@ -1,4 +1,25 @@
+<?php
+require_once "config.php";
+session_start();
+
+$e = "";
+$sql = "SELECT name, value, color FROM defaults;";
+if (mysqli_query($link, $sql)) {
+    while ($row = mysqli_fetch_row($result)) {
+        $settings[$row[0]] = [
+            "value" => $row[1],
+            "color" => $row[2]
+        ];
+    }
+    mysqli_free_result($result);
+    $_SESSION["settings"] = $settings;
+} else {
+    $e = $sql . "<br>" . mysqli_error($link);
+}
+?>
+
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>

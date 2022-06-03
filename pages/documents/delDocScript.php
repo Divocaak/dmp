@@ -1,5 +1,5 @@
 <?php
-require_once "../config.php";
+require_once "../../config.php";
 
 $e = "";
 if (!unlink("uploads/" . $_GET["file"] . ".pdf")) {

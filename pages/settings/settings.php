@@ -1,5 +1,5 @@
 <?php
-require_once "../config.php";
+require_once "../../config.php";
 session_start();
 
 $e = "";
@@ -31,7 +31,7 @@ if ($result = mysqli_query($link, $sql)) {
 
 <body class="text-center m-5 p-5">
     <div class="pb-3">
-        <a class="btn btn-outline-secondary" href="../../index.html"><i class="pe-2 bi bi-arrow-left-circle"></i>Zpět</a>
+        <a class="btn btn-outline-secondary" href="../../index.php"><i class="pe-2 bi bi-arrow-left-circle"></i>Zpět</a>
         <h1 class="d-inline-block ms-2">Nastavení</h1>
     </div>
     <form class="needs-validation" novalidate action="changeSettingsScript.php" method="post">

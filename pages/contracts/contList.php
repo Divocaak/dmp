@@ -1,5 +1,5 @@
 <?php
-require_once "../config.php";
+require_once "../../config.php";
 session_start();
 
 $e = "";
@@ -34,7 +34,7 @@ if ($result = mysqli_query($link, $sql)) {
 
 <body class="text-center m-5 p-5">
     <div class="pb-3">
-        <a class="btn btn-outline-secondary" href="../../index.html"><i class="pe-2 bi bi-arrow-left-circle"></i>Zpět</a>
+        <a class="btn btn-outline-secondary" href="../../index.php"><i class="pe-2 bi bi-arrow-left-circle"></i>Zpět</a>
         <h1 class="d-inline-block ms-2">Seznam pracovních vztahů</h1>
     </div>
     <a class="btn btn-outline-success" href="contForm.php"><i class="bi bi-person-workspace"></i><i class="pe-2 bi bi-plus"></i>Přidat pracovní vztah</a>
