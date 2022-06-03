@@ -4,7 +4,7 @@ session_start();
 
 $e = "";
 $sql = "SELECT name, value, color FROM defaults;";
-if (mysqli_query($link, $sql)) {
+if ($result = mysqli_query($link, $sql)) {
     while ($row = mysqli_fetch_row($result)) {
         $settings[$row[0]] = [
             "value" => $row[1],

@@ -1,16 +1,36 @@
 <?php
 require_once "../../config.php";
-session_start();
 
 $e = "";
-$sql = "INSERT INTO table (id, name, age) VALUES (1, 'A', 19) ON DUPLICATE KEY UPDATE name='A', age=19";
-
-/* $sql = "INSERT INTO employee (f_name, " . ($_POST["mname"] != "" ? "m_name, " : "") . " l_name, b_date, student, maternity, hpp)
-VALUES ('" . $_POST["fname"] . "'" . ($_POST["mname"] != "" ? (", '" . $_POST["mname"] . "'") : "") . ", '" . $_POST["lname"] . "', '" . $_POST["bdate"] . "', " . (isset($_POST["student"]) ? "1" : "0") . ", " . (isset($_POST["maternity"]) ? "1" : "0") . ", " . (isset($_POST["hpp"]) ? "1" : "0") . ");"; */
+$sql = "INSERT INTO defaults (" . getKeys() . ") VALUES (" . getValues() . ") ON DUPLICATE KEY UPDATE " . getDuplicateKeyUpdate() . ";";
 echo $sql;
-/* if (!mysqli_query($link, $sql)) {
+if (!mysqli_query($link, $sql)) {
     $e = $sql . "<br>" . mysqli_error($link);
-} */
+}
+
+function getKeys(){
+    $toRet = "";
+    foreach($_POST as $key => $value){
+        $toRet .= $key . ($value == end($_POST) ? "" : ", ");
+    }
+    return $toRet;
+}
+
+function getValues(){
+    $toRet = "";
+    foreach($_POST as $value){
+        $toRet .= "'" . $value . ($value == end($_POST) ? "'" : "', ");
+    }
+    return $toRet;
+}
+
+function getDuplicateKeyUpdate(){
+    $toRet = "";
+    foreach($_POST as $key => $value){
+        $toRet .= $key . "='" . $value . ($value == end($_POST) ? "'" : "', ");
+    }
+    return $toRet;
+}
 ?>
 
 <!DOCTYPE html>
