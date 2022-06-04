@@ -4,19 +4,35 @@ session_start();
 
 $e = "";
 $settings = [];
-$sql = "SELECT name, value, color FROM defaults;";
+
+$highestTagKey = 0;
+$tags = [];
+
+$sql = "SELECT name, value, color, status FROM defaults";
 if ($result = mysqli_query($link, $sql)) {
     while ($row = mysqli_fetch_row($result)) {
-        $settings[$row[0]] = [
+        $settingName = $row[0];
+        $setting = [
             "value" => $row[1],
-            "color" => $row[2]
+            "color" => $row[2],
+            "status" => $row[3]
         ];
+
+        $settings[$settingName] = $setting;
+        if ($setting["color"] != null) {
+            $tags[$settingName] = $setting;
+
+            $tagIndex = intval($settingName);
+            $highestTagKey = ($tagIndex > strval($highestTagKey) ? $tagIndex : $highestTagKey);
+        }
     }
     mysqli_free_result($result);
-    $_SESSION["settings"] = $settings;    
+    $_SESSION["settings"] = $settings;
 } else {
     $e = $sql . "<br>" . mysqli_error($link);
 }
+
+var_dump($settings);
 ?>
 
 <!DOCTYPE html>
@@ -36,18 +52,70 @@ if ($result = mysqli_query($link, $sql)) {
     </div>
     <form class="needs-validation" novalidate action="changeSettingsScript.php" method="post">
         <div class="form-floating mb-3">
-            <input type="number" class="form-control" id="maxHours" name="maxHours" value="<?php if($settings["maxHours"] != null) {echo $settings["maxHours"];} ?>">
+            <input type="number" class="form-control" id="maxHours" name="maxHours" value="<?php echo ($settings["maxHours"] != null ? $settings["maxHours"] : ""); ?>">
             <label for="maxHours">Maximální odpracovatelné hodiny</label>
         </div>
         <div class="form-floating mb-3">
-            <input type="number" class="form-control" id="maxCash" name="maxCash" value="<?php if($settings["maxCash"] != null) {echo $settings["maxCash"];} ?>">
+            <input type="number" class="form-control" id="maxCash" name="maxCash" value="<?php echo ($settings["maxCash"] != null ? $settings["maxCash"] : ""); ?>">
             <label for="maxCash">Maximální odpracovatelná částka [Kč]</label>
         </div>
+        <button class="btn btn-outline-success"><i class="bi bi-tag"></i><i class="pe-2 bi bi-plus"></i>Přidat značku</button>
+        <table class="mt-3 table table-striped table-hover" id="tableDataHolder" data-highest-key="<?php echo $highestTagKey;?>">
+            <caption>Seznam značek</caption>
+            <thead class="table-dark">
+                <tr>
+                    <th scope="col">Název</th>
+                    <th scope="col">Barva</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                foreach ($tags as $key => $tag) {
+                    if ($tag["status"] == "1") {
+                        echo '<tr>
+                        <td><input type="text" class="form-control" id="' . $key . 'Value" name="' . $key . 'Value" value="' . $tag["value"] . '"></td>
+                        <td><input type="color" class="form-control form-control-color" id="' . $key . 'Color" name="' . $key . 'Color" value="#' . $tag["color"] . '"></td>
+                        <td><a class="btn btn-outline-danger removeTagBtn" data-tag-name="' . $key . '"><i class="bi bi-tag"></i><i class="bi bi-dash"></i></a></td>
+                        </tr>';
+                    }
+                }
+                ?>
+            </tbody>
+        </table>
         <button type="submit" class="btn btn-outline-primary"><i class="pe-2 bi bi-save"></i>Uložit změny</button>
     </form>
+    <div class="modal fade" id="confDeleteModal" tabindex="-1" aria-labelledby="confDeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Opravdu?</h5>
+                </div>
+                <div class="modal-body">
+                    Skutečně chcete odstranit značku ze systému?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Zavřít</button>
+                    <button type="button" class="btn btn-outline-danger" id="confDeleteBtn">Odstranit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
     <script>
+        $(document).ready(function() {
+            var tagName;
+            $(".removeTagBtn").click(function() {
+                tagName = $(this).data("tagName");
+                $('#confDeleteModal').modal('show');
+            });
+
+            $("#confDeleteBtn").click(function() {
+                window.location = "delTagScript?id=" + tagName;
+            });
+        });
+
         (function() {
             "use strict"
             var forms = document.querySelectorAll(".needs-validation")

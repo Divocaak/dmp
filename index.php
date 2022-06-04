@@ -3,7 +3,7 @@ require_once "config.php";
 session_start();
 
 $e = "";
-$sql = "SELECT name, value, color FROM defaults;";
+$sql = "SELECT name, value, color FROM defaults WHERE status=1;";
 if ($result = mysqli_query($link, $sql)) {
     while ($row = mysqli_fetch_row($result)) {
         $settings[$row[0]] = [

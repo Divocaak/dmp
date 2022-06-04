@@ -2,11 +2,13 @@
 require_once "../../config.php";
 
 $e = "";
-$sql = "INSERT INTO defaults (" . getKeys() . ") VALUES (" . getValues() . ") ON DUPLICATE KEY UPDATE " . getDuplicateKeyUpdate() . ";";
+var_dump($_POST);
+/* $sql = "INSERT INTO defaults (" . getKeys() . ") VALUES (" . getValues() . ") ON DUPLICATE KEY UPDATE " . getDuplicateKeyUpdate() . ";";
+$sql = "INSERT INTO defaults (name, value, color) VALUES ('test', 2, NULL), ('t', 1, 'FFF') ON DUPLICATE KEY UPDATE value=(CASE WHEN name='test' THEN '22' WHEN name='t' THEN '33' END);";
 echo $sql;
 if (!mysqli_query($link, $sql)) {
     $e = $sql . "<br>" . mysqli_error($link);
-}
+} */
 
 function getKeys(){
     $toRet = "";
