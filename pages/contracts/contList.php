@@ -3,19 +3,37 @@ require_once "../../config.php";
 session_start();
 
 $e = "";
-$documents = [];
-$sql = "SELECT id, label, date_start, date_end, cash_rate, file_name FROM document;";
+$contracts = [];
+$sql = "SELECT c.id, c.max_hours, c.max_cash, c.note, e.f_name, e.m_name, e.l_name, e.b_date, e.student, e.maternity, e.hpp, d.label, d.date_start, d.date_end, d.cash_rate, d.file_name 
+    FROM contract c INNER JOIN employee e ON c.id_employee=e.id INNER JOIN document d ON c.id_document=d.id;";
 if ($result = mysqli_query($link, $sql)) {
     while ($row = mysqli_fetch_row($result)) {
-        $documents[] = [
-            "id" => $row[0],
-            "label" => $row[1],
-            "dateStart" => $row[2],
-            "dateEnd" => $row[3],
-            "cashRate" => $row[4],
-            "fileName" => $row[5]
+        $contracts[] = [
+            "cont" => [
+                "id" => $row[0],
+                "maxHours" => $row[1],
+                "maxCash" => $row[2],
+                "note" => $row[3]
+            ],
+            "emp" => [
+                "fName" => $row[4],
+                "mName" => $row[5],
+                "lName" => $row[6],
+                "bDate" => $row[7],
+                "student" => $row[8],
+                "maternity" => $row[9],
+                "hpp" => $row[10]
+            ],
+            "doc" => [
+                "label" => $row[11],
+                "start" => $row[12],
+                "end" => $row[13],
+                "cashRate" => $row[14],
+                "fileName" => $row[15]
+            ]
         ];
     }
+    $_SESSION["contracts"] = $contracts;
     mysqli_free_result($result);
 } else {
     $e = $sql . "<br>" . mysqli_error($link);
@@ -37,38 +55,33 @@ if ($result = mysqli_query($link, $sql)) {
         <a class="btn btn-outline-secondary" href="../../index.php"><i class="pe-2 bi bi-arrow-left-circle"></i>Zpět</a>
         <h1 class="d-inline-block ms-2">Seznam pracovních vztahů</h1>
     </div>
-    <a class="btn btn-outline-success" href="contForm.php"><i class="bi bi-person-workspace"></i><i class="pe-2 bi bi-plus"></i>Přidat pracovní vztah</a>
+    <a class="btn btn-outline-success" href="contForm.php"><i class="bi bi-person-workspace"></i><i class="ps-1 pe-2 bi bi-plus"></i>Přidat pracovní vztah</a>
     <table class="mt-3 table table-striped table-hover">
         <caption>Seznam smluv</caption>
         <thead class="table-dark">
             <tr>
                 <th scope="col">#</th>
-                <th scope="col">Název</th>
-                <th scope="col">Od</th>
-                <th scope="col">Do</th>
-                <th scope="col">Hodinová mzda [Kč/h]</th>
-                <th scope="col">Soubor</th>
+                <th scope="col">Limity</th>
+                <th scope="col">Zaměstnanec</th>
+                <th scope="col">Začátek poměru</th>
+                <th scope="col">Konec poměru</th>
+                <th scope="col">Hodinová mzda [Kč]</th>
                 <th scope="col"></th>
                 <th scope="col"></th>
             </tr>
         </thead>
         <tbody>
             <?php
-            unset($_SESSION["documents"]);
-            for ($i = 0; $i < count($documents); $i++) {
-                $_SESSION["documents"][$documents[$i]["id"]] = $documents[$i];
-                echo '<tr>
+            for ($i = 0; $i < count($contracts); $i++) {
+                echo '<tr">
                     <th scope="row">' . ($i + 1) . '</th>
-                    <td>' . $documents[$i]["label"] . '</td>
-                    <td>' . $documents[$i]["dateStart"] . '</td>
-                    <td>' . $documents[$i]["dateEnd"] . '</td>
-                    <td>' . $documents[$i]["cashRate"] . '</td>
-                    <td>
-                        <a class="btn btn-outline-info" href="uploads/' . $documents[$i]["fileName"] . '.pdf" target="_blank"><i class="bi bi-eye"></i> ' . $documents[$i]["fileName"] . '.pdf</a>
-                        <a class="btn btn-outline-secondary" href="uploads/' . $documents[$i]["fileName"] . '.pdf" download><i class="bi bi-download"></i></a>
-                    </td>
-                    <td><a class="btn btn-outline-primary" href="docForm.php?docId=' . $documents[$i]["id"] . '"><i class="bi bi-pencil"></i></a></td>
-                    <td><a class="btn btn-outline-danger deleteBtn" data-doc-id="' . $documents[$i]["id"] . '" data-doc-file="' . $documents[$i]["fileName"] . '"><i class="bi bi-file-earmark-x"></i></a></td>
+                    <td>' . $contracts[$i]["cont"]["maxHours"] . " hodin, " . $contracts[$i]["cont"]["maxCash"] . ' Kč</td>
+                    <td>' . $contracts[$i]["emp"]["fName"] . ($contracts[$i]["emp"]["mName"] != null ? (" " . $contracts[$i]["emp"]["mName"]) : "") . " " . $contracts[$i]["emp"]["lName"] . '</td>
+                    <td>' . $contracts[$i]["doc"]["start"]  . '</td>
+                    <td>' . $contracts[$i]["doc"]["end"] . '</td>
+                    <td>' . $contracts[$i]["doc"]["cashRate"] . '</td>
+                    <td><a class="btn btn-outline-info detailBtn" data-cont-index="' . $i . '"><i class="bi bi-person-workspace pe-1"></i><i class="bi bi-eye"></i></a></td>
+                    <td><a class="btn btn-outline-danger deleteBtn" data-cont-id="' . $contracts[$i]["cont"]["id"] . '"><i class="bi bi-person-workspace pe-1"></i><i class="bi bi-trash"></i></a></td>
                 </tr>';
             }
             ?>
@@ -81,7 +94,7 @@ if ($result = mysqli_query($link, $sql)) {
                     <h5 class="modal-title" id="exampleModalLabel">Opravdu?</h5>
                 </div>
                 <div class="modal-body">
-                    Skutečně chcete odstranit smlouvu ze systému?
+                    Skutečně chcete odstranit pracovní vztah ze systému?
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Zavřít</button>
@@ -90,20 +103,74 @@ if ($result = mysqli_query($link, $sql)) {
             </div>
         </div>
     </div>
+    <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Podrobnosti</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <p id="detailContLimits"></p>
+                            <p id="detailContNote"></p>
+                        </div>
+                        <div class="col-6">
+                            <p id="detailEmpName"></p>
+                            <p id="detailEmpBDate"></p>
+                            <p id="detailEmpStudent"></p>
+                            <p id="detailEmpMaternity"></p>
+                            <p id="detailEmpHpp"></p>
+                        </div>
+                        <div class="col-6">
+                            <p id="detailDocLabel"></p>
+                            <p id="detailDocStart"></p>
+                            <p id="detailDocEnd"></p>
+                            <p id="detailDocCashRate"></p>
+                            <p id="detailDocFileName"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Zavřít</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
         $(document).ready(function() {
-            var docId;
-            var docFile;
+            $(".detailBtn").click(function() {
+                $.post("getContDetail.php", {
+                    index: $(this).data("contIndex")
+                }, function(data) {
+                    var dataDecoded = JSON.parse(data);
+                    $("#detailContLimits").text("Limity: " + dataDecoded["cont"]["maxHours"] + " hodin, " + dataDecoded["cont"]["maxCash"] + "Kč");
+                    $("#detailContNote").text("Poznámka: " + dataDecoded["cont"]["note"]);
+                    $("#detailEmpName").text("Jméno: " + dataDecoded["emp"]["fName"] + " " + dataDecoded["emp"]["mName"] + " " + dataDecoded["emp"]["lName"]);
+                    $("#detailEmpBDate").text("Datum narození: " + dataDecoded["emp"]["bDate"]);
+                    $("#detailEmpStudent").text("Student: " + dataDecoded["emp"]["student"]);
+                    $("#detailEmpMaternity").text("Mateřská dovolená: " + dataDecoded["emp"]["maternity"]);
+                    $("#detailEmpHpp").text("HPP: " + dataDecoded["emp"]["hpp"]);
+                    $("#detailDocLabel").text("Název: " + dataDecoded["doc"]["label"]);
+                    $("#detailDocStart").text("Začátek: " + dataDecoded["doc"]["start"]);
+                    $("#detailDocEnd").text("Konec: " + dataDecoded["doc"]["end"]);
+                    $("#detailDocCashRate").text("Hodinová mzda: " + dataDecoded["doc"]["cashRate"]);
+                    $("#detailDocFileName").text("Soubor: " + dataDecoded["doc"]["fileName"]);
+
+                    $('#detailModal').modal('show');
+                });
+            });
+
+            var contId;
             $(".deleteBtn").click(function() {
-                docId = $(this).data("docId");
-                docFile = $(this).data("docFile");
+                contId = $(this).data("contId");
                 $('#confDeleteModal').modal('show');
             });
 
             $("#confDeleteBtn").click(function() {
-                window.location = "delDocScript?id=" + docId + "&file=" + docFile;
+                window.location = "delContScript?id=" + contId;
             });
         });
     </script>
