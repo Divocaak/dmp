@@ -1,5 +1,6 @@
 <?php
 require_once "../../config.php";
+session_start();
 ?>
 
 <!DOCTYPE html>
@@ -51,11 +52,11 @@ require_once "../../config.php";
             <label for="docSelect">Smlouva</label>
         </div>
         <div class="form-floating mb-3">
-            <input type="number" class="form-control" id="maxHours" name="maxHours" required>
+            <input type="number" class="form-control" id="maxHours" name="maxHours" required value="<?php echo $_SESSION["settings"]["maxHours"]["value"];?>">
             <label for="maxHours">Maximální odpracovatelné hodiny</label>
         </div>
         <div class="form-floating mb-3">
-            <input type="number" class="form-control" id="maxCash" name="maxCash" required>
+            <input type="number" class="form-control" id="maxCash" name="maxCash" required value="<?php echo $_SESSION["settings"]["maxCash"]["value"];?>">
             <label for="maxCash">Maximální odpracovatelná částka [Kč]</label>
         </div>
         <div class="form-floating mb-3">
@@ -64,6 +65,7 @@ require_once "../../config.php";
         </div>
         <button type="submit" class="btn btn-outline-primary"><i class="bi bi-person-workspace"></i><i class="pe-2 bi bi-plus"></i>Přidat pracovní vztah</button>
     </form>
+    <p class="pt-5 text-muted">Hodnota 'maximální odpracované hodiny' a 'maximální odpracovatelná částka' je načtena z nastavení, pokud je nastavena.</p>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
