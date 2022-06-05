@@ -2,36 +2,45 @@
 require_once "../../config.php";
 
 $e = "";
-var_dump($_POST);
-/* $sql = "INSERT INTO defaults (" . getKeys() . ") VALUES (" . getValues() . ") ON DUPLICATE KEY UPDATE " . getDuplicateKeyUpdate() . ";";
-$sql = "INSERT INTO defaults (name, value, color) VALUES ('test', 2, NULL), ('t', 1, 'FFF') ON DUPLICATE KEY UPDATE value=(CASE WHEN name='test' THEN '22' WHEN name='t' THEN '33' END);";
-echo $sql;
+$sql = "INSERT INTO defaults (name, value, color) VALUES " . getValues() . " ON DUPLICATE KEY UPDATE value=" . duplicateValueUpdate() . ", color=" . duplicateColorUpdate() . ", status='1';";
 if (!mysqli_query($link, $sql)) {
     $e = $sql . "<br>" . mysqli_error($link);
-} */
-
-function getKeys(){
-    $toRet = "";
-    foreach($_POST as $key => $value){
-        $toRet .= $key . ($value == end($_POST) ? "" : ", ");
-    }
-    return $toRet;
 }
 
 function getValues(){
     $toRet = "";
-    foreach($_POST as $value){
-        $toRet .= "'" . $value . ($value == end($_POST) ? "'" : "', ");
+    foreach($_POST as $key => $value){
+        if(preg_match("/tag([0-9])Color/", $key) != null){
+            continue;
+        }
+        
+        preg_match("/tag([0-9])Value/", $key, $valueMatchRet);
+        $toRet .= "('" . (($valueMatchRet != []) ? ($valueMatchRet[1] . "', '" . $_POST[$key] . "', '" . str_replace("#", "", $_POST["tag" . $valueMatchRet[1] . "Color"]) . "'") : ($key . "', '" . $value . "', NULL")) . "), ";
     }
-    return $toRet;
+    return substr($toRet, 0, -2);
 }
 
-function getDuplicateKeyUpdate(){
-    $toRet = "";
+function duplicateValueUpdate(){
+    $toRet = "(CASE";
     foreach($_POST as $key => $value){
-        $toRet .= $key . "='" . $value . ($value == end($_POST) ? "'" : "', ");
+        if(preg_match("/tag([0-9])Color/", $key) != null){
+            continue;
+        }
+        
+        preg_match("/tag([0-9])Value/", $key, $valueMatchRet);
+        $elementKey = ($valueMatchRet != []) ? $valueMatchRet[1] : $key;
+        $toRet .= " WHEN name='" . $elementKey . "' THEN '" . $_POST[$key] . "'";
     }
-    return $toRet;
+    return $toRet . " END)";
+}
+
+function duplicateColorUpdate(){
+    $toRet = "(CASE";
+    foreach($_POST as $key => $value){
+        preg_match("/tag([0-9])Color/", $key, $colorMatchRet);
+        $toRet .= ($colorMatchRet != []) ? (" WHEN name='" . $colorMatchRet[1] . "' THEN '" . str_replace("#", "", $_POST[$key]) . "'") : "";
+    }
+    return $toRet . " END)";
 }
 ?>
 
