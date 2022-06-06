@@ -3,11 +3,11 @@ session_start();
 require_once "../../config.php";
 
 $e = "";
-$target_file = "uploads/" . basename($_FILES["documentFile"]["name"]);
+$target_file = "../uploads/" . basename($_FILES["documentFile"]["name"]);
 $finalFileName = $_SESSION["documents"][$_GET["docId"]]["fileName"];
 if(!empty($_FILES)){
   $finalFileName = str_replace(".pdf", "", basename($_FILES["documentFile"]["name"]));
-  if (!unlink("uploads/" . $_SESSION["documents"][$_GET["docId"]]["fileName"] . ".pdf")) {
+  if (!unlink("../uploads/" . $_SESSION["documents"][$_GET["docId"]]["fileName"] . ".pdf")) {
     $e = "Při odstraňování PDF smlouvy nastala chyba.";
   } else { 
     if (file_exists($target_file)) {

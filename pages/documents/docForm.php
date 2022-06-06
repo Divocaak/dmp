@@ -36,7 +36,7 @@
         <label for="documentFile" class="form-label">Sken smlouvy</label>
         <?php
             if(!$_GET["add"]){
-                echo '<br>Nahraný dokument: <a class="btn btn-outline-info" href="uploads/' . $_SESSION["documents"][$_GET["docId"]]["fileName"] . '.pdf" target="_blank"><i class="bi bi-eye"></i> ' . $_SESSION["documents"][$_GET["docId"]]["fileName"] . '.pdf</a>';
+                echo '<br>Nahraný dokument: <a class="btn btn-outline-info" href="../uploads/' . $_SESSION["documents"][$_GET["docId"]]["fileName"] . '.pdf" target="_blank"><i class="bi bi-eye"></i> ' . $_SESSION["documents"][$_GET["docId"]]["fileName"] . '.pdf</a>';
                 echo '<div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" id="toggleFileInput">
                         <label class="form-check-label" for="toggleFileInput">Chci změnit sken smlouvy</label>

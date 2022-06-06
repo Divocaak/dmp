@@ -64,8 +64,8 @@ if ($result = mysqli_query($link, $sql)) {
                     <td>' . $documents[$i]["dateEnd"] . '</td>
                     <td>' . $documents[$i]["cashRate"] . '</td>
                     <td>
-                        <a class="btn btn-outline-info" href="uploads/' . $documents[$i]["fileName"] . '.pdf" target="_blank"><i class="bi bi-eye"></i> ' . $documents[$i]["fileName"] . '.pdf</a>
-                        <a class="btn btn-outline-secondary" href="uploads/' . $documents[$i]["fileName"] . '.pdf" download><i class="bi bi-download"></i></a>
+                        <a class="btn btn-outline-info" href="../uploads/' . $documents[$i]["fileName"] . '.pdf" target="_blank"><i class="bi bi-eye"></i> ' . $documents[$i]["fileName"] . '.pdf</a>
+                        <a class="btn btn-outline-secondary" href="../uploads/' . $documents[$i]["fileName"] . '.pdf" download><i class="bi bi-download"></i></a>
                     </td>
                     <td><a class="btn btn-outline-primary" href="docForm.php?docId=' . $documents[$i]["id"] . '"><i class="bi bi-pencil"></i></a></td>
                     <td><a class="btn btn-outline-danger deleteBtn" data-doc-id="' . $documents[$i]["id"] . '" data-doc-file="' . $documents[$i]["fileName"] . '"><i class="bi bi-file-earmark-x"></i></a></td>

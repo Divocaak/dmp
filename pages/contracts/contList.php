@@ -118,16 +118,16 @@ if ($result = mysqli_query($link, $sql)) {
                         <div class="col-6">
                             <p id="detailEmpName"></p>
                             <p id="detailEmpBDate"></p>
-                            <p id="detailEmpStudent"></p>
-                            <p id="detailEmpMaternity"></p>
-                            <p id="detailEmpHpp"></p>
+                            <p>Student: <i class="" id="detailEmpStudent"></i></p>
+                            <p>Mateřská dovolená: <i class="" id="detailEmpMaternity"></i></p>
+                            <p>HPP: <i class="" id="detailEmpHpp"></i></p>
                         </div>
                         <div class="col-6">
                             <p id="detailDocLabel"></p>
                             <p id="detailDocStart"></p>
                             <p id="detailDocEnd"></p>
                             <p id="detailDocCashRate"></p>
-                            <p id="detailDocFileName"></p>
+                            <a id="detailDocFileBtn" class="btn btn-outline-info" href="" target="_blank"><i class="bi bi-eye"></i><p id="detailDocFileName"></p></a>
                         </div>
                     </div>
                 </div>
@@ -148,16 +148,17 @@ if ($result = mysqli_query($link, $sql)) {
                     var dataDecoded = JSON.parse(data);
                     $("#detailContLimits").text("Limity: " + dataDecoded["cont"]["maxHours"] + " hodin, " + dataDecoded["cont"]["maxCash"] + "Kč");
                     $("#detailContNote").text("Poznámka: " + dataDecoded["cont"]["note"]);
-                    $("#detailEmpName").text("Jméno: " + dataDecoded["emp"]["fName"] + " " + dataDecoded["emp"]["mName"] + " " + dataDecoded["emp"]["lName"]);
+                    $("#detailEmpName").text("Jméno: " + dataDecoded["emp"]["fName"] + (dataDecoded["emp"]["mName"] != null ? (" " + dataDecoded["emp"]["mName"]) : "") + " " + dataDecoded["emp"]["lName"]);
                     $("#detailEmpBDate").text("Datum narození: " + dataDecoded["emp"]["bDate"]);
-                    $("#detailEmpStudent").text("Student: " + dataDecoded["emp"]["student"]);
-                    $("#detailEmpMaternity").text("Mateřská dovolená: " + dataDecoded["emp"]["maternity"]);
-                    $("#detailEmpHpp").text("HPP: " + dataDecoded["emp"]["hpp"]);
+                    $("#detailEmpStudent").addClass("bi bi-" + (dataDecoded["emp"]["student"] == "1" ? "check-circle-fill text-success" : "x-circle-fill text-danger"));
+                    $("#detailEmpMaternity").addClass("bi bi-" + (dataDecoded["emp"]["maternity"] == "1" ? "check-circle-fill text-success" : "x-circle-fill text-danger"));
+                    $("#detailEmpHpp").addClass("bi bi-" + (dataDecoded["emp"]["hpp"] == "1" ? "check-circle-fill text-success" : "x-circle-fill text-danger"));
                     $("#detailDocLabel").text("Název: " + dataDecoded["doc"]["label"]);
                     $("#detailDocStart").text("Začátek: " + dataDecoded["doc"]["start"]);
                     $("#detailDocEnd").text("Konec: " + dataDecoded["doc"]["end"]);
-                    $("#detailDocCashRate").text("Hodinová mzda: " + dataDecoded["doc"]["cashRate"]);
-                    $("#detailDocFileName").text("Soubor: " + dataDecoded["doc"]["fileName"]);
+                    $("#detailDocCashRate").text("Hodinová mzda: " + dataDecoded["doc"]["cashRate"] + " Kč/h");
+                    $("#detailDocFileName").text(dataDecoded["doc"]["fileName"] + ".pdf");
+                    $("#detailDocFileBtn").attr("href", "../uploads/" + dataDecoded["doc"]["fileName"] + ".pdf")
 
                     $('#detailModal').modal('show');
                 });

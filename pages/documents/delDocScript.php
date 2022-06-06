@@ -2,7 +2,7 @@
 require_once "../../config.php";
 
 $e = "";
-if (!unlink("uploads/" . $_GET["file"] . ".pdf")) {
+if (!unlink("../uploads/" . $_GET["file"] . ".pdf")) {
     $e = "Při odstraňování PDF smlouvy nastala chyba.";
 } else {
     $sql = "DELETE FROM document WHERE id=" . $_GET["id"] . ";";

@@ -2,7 +2,7 @@
 require_once "../../config.php";
 
 $e = "";
-$target_file = "uploads/" . basename($_FILES["documentFile"]["name"]);
+$target_file = "../uploads/" . basename($_FILES["documentFile"]["name"]);
 if (file_exists($target_file)) {
   $e = "Soubor se stejným názvem již existuje. ";
 } else if(strtolower(pathinfo($target_file, PATHINFO_EXTENSION)) != "pdf") {
