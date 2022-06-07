@@ -78,9 +78,9 @@ session_start();
                 <th scope="col"></th>
             </tr>
         </thead>
-        <tbody>
+        <tbody> -->
             <?php
-            unset($_SESSION["employees"]);
+            /* unset($_SESSION["employees"]);
             for ($i = 0; $i < count($employees); $i++) {
                 $_SESSION["employees"][$employees[$i]["id"]] = $employees[$i];
                 echo '<tr>
@@ -93,9 +93,53 @@ session_start();
                     <td><a class="btn btn-outline-primary" href="empForm.php?empId=' . $employees[$i]["id"] . '"><i class="bi bi-pencil"></i></a></td>
                     <td><a class="btn btn-outline-danger deleteBtn" data-emp-id="' . $employees[$i]["id"] . '"><i class="bi bi-person-x"></i></a></td>
                 </tr>';
+            } */
+            $month = 5;
+            $year = 2022;
+
+            $sql = "SELECT e.date, e.minutes, def.value, def.color, c.max_hours, c.max_cash, c.note, d.label, d.date_start, d.date_end, d.cash_rate 
+            FROM entry e INNER JOIN defaults def ON e.id_category=def.name INNER JOIN contract c ON e.id_contract=c.id INNER JOIN document d ON c.id_document=d.id
+            WHERE YEAR(e.date)=" . $year . " AND MONTH(e.date)=" . $month . ";";
+            if ($result = mysqli_query($link, $sql)) {
+                $entries = [];
+                while ($row = mysqli_fetch_row($result)) {
+                    $entries[] = [
+                        "date" => $row[0],
+                        "minutes" => $row[1],
+                        "tag" => [
+                            "label" => $row[2],
+                            "color" => $row[3]
+                        ],
+                        "contract" => [
+                            "maxHours" => $row[4],
+                            "maxCash" => $row[5],
+                            "note" => $row[6]
+                        ],
+                        "document" => [
+                            "label" => $row[7],
+                            "start" => $row[8],
+                            "end" => $row[9],
+                            "cashRate" => $row[10]
+                        ]
+                    ];
+                }
+                mysqli_free_result($result);
+
+                for($day = 1; $day < cal_days_in_month(CAL_GREGORIAN, $month, $year) + 1; $day++){
+                    foreach($entries as $entry){
+                        if(DateTime::createFromFormat("Y-m-d", $entry["date"])->format("d") == $day){
+                            echo $day . ": " . $entry["minutes"] . "<br>";
+                        }
+                    }
+
+                    echo $day . "<br>";
+                }
+            } else {
+                echo "eee";
             }
+            
             ?>
-        </tbody>
+        <!-- </tbody>
     </table> -->
     <!-- <div class="modal fade" id="confDeleteModal" tabindex="-1" aria-labelledby="confDeleteModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-sm modal-dialog-centered">
