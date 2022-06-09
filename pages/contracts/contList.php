@@ -150,9 +150,9 @@ if ($result = mysqli_query($link, $sql)) {
                     $("#detailContNote").text("Poznámka: " + dataDecoded["cont"]["note"]);
                     $("#detailEmpName").text("Jméno: " + dataDecoded["emp"]["fName"] + (dataDecoded["emp"]["mName"] != null ? (" " + dataDecoded["emp"]["mName"]) : "") + " " + dataDecoded["emp"]["lName"]);
                     $("#detailEmpBDate").text("Datum narození: " + dataDecoded["emp"]["bDate"]);
-                    $("#detailEmpStudent").addClass("bi bi-" + (dataDecoded["emp"]["student"] == "1" ? "check-circle-fill text-success" : "x-circle-fill text-danger"));
-                    $("#detailEmpMaternity").addClass("bi bi-" + (dataDecoded["emp"]["maternity"] == "1" ? "check-circle-fill text-success" : "x-circle-fill text-danger"));
-                    $("#detailEmpHpp").addClass("bi bi-" + (dataDecoded["emp"]["hpp"] == "1" ? "check-circle-fill text-success" : "x-circle-fill text-danger"));
+                    $("#detailEmpStudent").attr('class', "bi bi-" + (dataDecoded["emp"]["student"] == "1" ? "check-circle-fill text-success" : "x-circle-fill text-danger"));
+                    $("#detailEmpMaternity").attr('class', "bi bi-" + (dataDecoded["emp"]["maternity"] == "1" ? "check-circle-fill text-success" : "x-circle-fill text-danger"));
+                    $("#detailEmpHpp").attr('class', "bi bi-" + (dataDecoded["emp"]["hpp"] == "1" ? "check-circle-fill text-success" : "x-circle-fill text-danger"));
                     $("#detailDocLabel").text("Název: " + dataDecoded["doc"]["label"]);
                     $("#detailDocStart").text("Začátek: " + dataDecoded["doc"]["start"]);
                     $("#detailDocEnd").text("Konec: " + dataDecoded["doc"]["end"]);

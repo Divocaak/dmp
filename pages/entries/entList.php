@@ -63,92 +63,103 @@ session_start();
         </div>
     </form>
 
+    <?php
+    $month = 5;
+    $year = 2022;
 
-    <!-- <table class="mt-3 table table-striped table-hover">
-        <caption>Seznam zaměstnanců</caption>
+    $sql = "SELECT e.id, e.date, e.minutes, def.value, def.color, c.id, c.max_hours, c.max_cash, c.note, d.label, d.date_start, d.date_end, d.cash_rate 
+            FROM entry e LEFT JOIN defaults def ON e.id_category=def.name INNER JOIN contract c ON e.id_contract=c.id INNER JOIN document d ON c.id_document=d.id
+            WHERE YEAR(e.date)=" . $year . " AND MONTH(e.date)=" . $month . ";";
+    if ($result = mysqli_query($link, $sql)) {
+        $entries = [];
+        $contracts = [];
+        while ($row = mysqli_fetch_row($result)) {
+            $entries[] = [
+                "id" => $row[0],
+                "date" => $row[1],
+                "minutes" => $row[2],
+                "tag" => [
+                    "label" => $row[3],
+                    "color" => $row[4]
+                ],
+                "contract" => [
+                    "id" => $row[5],
+                    "maxHours" => $row[6],
+                    "maxCash" => $row[7],
+                    "note" => $row[8]
+                ],
+                "document" => [
+                    "label" => $row[9],
+                    "start" => $row[10],
+                    "end" => $row[11],
+                    "cashRate" => $row[12]
+                ]
+            ];
+
+            if (!in_array($row[5], $contracts)) {
+                $contracts[] = $row[5];
+            }
+        }
+        mysqli_free_result($result);
+    } else {
+        echo "eee";
+    }
+    ?>
+
+    <table class="mt-3 table table-striped table-hover">
+        <caption>Zápisy</caption>
         <thead class="table-dark">
             <tr>
                 <th scope="col">#</th>
-                <th scope="col">Jméno</th>
-                <th scope="col">Datum narození</th>
-                <th scope="col">Student</th>
-                <th scope="col">Mateřská dovolená</th>
-                <th scope="col">HPP</th>
-                <th scope="col"></th>
-                <th scope="col"></th>
+                <?php
+                sort($contracts);
+                foreach ($contracts as $contract) {
+                    echo "<th scope='col'>" . $contract . "</th>";
+                }
+                ?>
             </tr>
         </thead>
-        <tbody> -->
+        <tbody>
             <?php
-            /* unset($_SESSION["employees"]);
-            for ($i = 0; $i < count($employees); $i++) {
-                $_SESSION["employees"][$employees[$i]["id"]] = $employees[$i];
-                echo '<tr>
-                    <th scope="row">' . ($i + 1) . '</th>
-                    <td>' . $employees[$i]["fname"] . ($employees[$i]["mname"] != null ? (" " . $employees[$i]["mname"]) : "") . " " . $employees[$i]["lname"] . '</td>
-                    <td>' . $employees[$i]["bdate"] . '</td>
-                    <td><i class="bi bi-' . ($employees[$i]["student"] == "1" ? "check-circle-fill text-success" : "x-circle-fill text-danger") . '"></i></td>
-                    <td><i class="bi bi-' . ($employees[$i]["maternity"] == "1" ? "check-circle-fill text-success" : "x-circle-fill text-danger") . '"></i></td>
-                    <td><i class="bi bi-' . ($employees[$i]["hpp"] == "1" ? "check-circle-fill text-success" : "x-circle-fill text-danger") . '"></i></td>
-                    <td><a class="btn btn-outline-primary" href="empForm.php?empId=' . $employees[$i]["id"] . '"><i class="bi bi-pencil"></i></a></td>
-                    <td><a class="btn btn-outline-danger deleteBtn" data-emp-id="' . $employees[$i]["id"] . '"><i class="bi bi-person-x"></i></a></td>
-                </tr>';
-            } */
-            $month = 5;
-            $year = 2022;
+            for ($day = 1; $day < cal_days_in_month(CAL_GREGORIAN, $month, $year) + 1; $day++) {
+                $rowHead = '<th scope="row">' . $day . "." . $month . '.</th>';
+                $cellTag = "";
+                $cellContent = "";
+                foreach ($contracts as $contract) {
+                    $hasEntry = false;
 
-            $sql = "SELECT e.date, e.minutes, def.value, def.color, c.max_hours, c.max_cash, c.note, d.label, d.date_start, d.date_end, d.cash_rate 
-            FROM entry e INNER JOIN defaults def ON e.id_category=def.name INNER JOIN contract c ON e.id_contract=c.id INNER JOIN document d ON c.id_document=d.id
-            WHERE YEAR(e.date)=" . $year . " AND MONTH(e.date)=" . $month . ";";
-            if ($result = mysqli_query($link, $sql)) {
-                $entries = [];
-                while ($row = mysqli_fetch_row($result)) {
-                    $entries[] = [
-                        "date" => $row[0],
-                        "minutes" => $row[1],
-                        "tag" => [
-                            "label" => $row[2],
-                            "color" => $row[3]
-                        ],
-                        "contract" => [
-                            "maxHours" => $row[4],
-                            "maxCash" => $row[5],
-                            "note" => $row[6]
-                        ],
-                        "document" => [
-                            "label" => $row[7],
-                            "start" => $row[8],
-                            "end" => $row[9],
-                            "cashRate" => $row[10]
-                        ]
-                    ];
-                }
-                mysqli_free_result($result);
-
-                for($day = 1; $day < cal_days_in_month(CAL_GREGORIAN, $month, $year) + 1; $day++){
-                    foreach($entries as $entry){
-                        if(DateTime::createFromFormat("Y-m-d", $entry["date"])->format("d") == $day){
-                            echo $day . ": " . $entry["minutes"] . "<br>";
+                    $cellTag .= "<td data-day='" . $day . "' data-contract-id='" . $contract . "'";
+                    foreach ($entries as $entry) {
+                        if (DateTime::createFromFormat("Y-m-d", $entry["date"])->format("d") == $day && $entry["contract"]["id"] == $contract) {
+                            $hasEntry = true;
+                            $cellTag .= " data-entry-id='" . $entry["id"] . "'";
+                            $cellContent .= date('H:i', mktime(0, $entry["minutes"]));
+                            $cellContent .= (isset($entry["tag"]["label"]) ? ('<span class="ms-2 badge rounded-pill" style="background-color:#' . $entry["tag"]["color"] . ';">' . $entry["tag"]["label"] . "</span>") : "") . "<br>";
+                            $cellContent .= '<a class="mt-2 me-2 btn btn-outline-primary editBtn actionIdBtn"><i class="bi bi-pencil"></i></a>';
+                            $cellContent .= '<a class="mt-2 btn btn-outline-danger deleteBtn actionIdBtn"><i class="bi bi-trash"></i></a>';
                         }
                     }
+                    $cellTag .= ">";
 
-                    echo $day . "<br>";
+                    if (!$hasEntry) {
+                        $cellContent .= '<a class="mt-2 btn btn-outline-success addBtn"><i class="bi bi-plus"></i></a>';
+                    }
+
+                    $cellContent .= "</td>";
                 }
-            } else {
-                echo "eee";
+                echo '<tr>' . $rowHead . $cellTag . $cellContent . "</tr>";
             }
-            
             ?>
-        <!-- </tbody>
-    </table> -->
-    <!-- <div class="modal fade" id="confDeleteModal" tabindex="-1" aria-labelledby="confDeleteModalLabel" aria-hidden="true">
+        </tbody>
+    </table>
+    <div class="modal fade" id="confDeleteModal" tabindex="-1" aria-labelledby="confDeleteModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-sm modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Opravdu?</h5>
                 </div>
                 <div class="modal-body">
-                    Skutečně chcete odstranit zaměstnance ze systému?
+                    Skutečně chcete odstranit záznam ze systému?
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Zavřít</button>
@@ -156,22 +167,94 @@ session_start();
                 </div>
             </div>
         </div>
-    </div> -->
+    </div>
+    <div class="modal fade" id="entryFormModal" tabindex="-1" aria-labelledby="entryFormModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Zápis</h5>
+                </div>
+                <div class="modal-body">
+                    <form class="needs-validation" novalidate action="" method="post">
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-floating mb-3">
+                                    <input type="number" class="form-control" id="hours" name="hours" required value="">
+                                    <label for="hours">Hodiny</label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-floating mb-3">
+                                    <input type="number" class="form-control" id="minutes" name="minutes" required value="">
+                                    <label for="minutes">Minuty</label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="form-floating mb-3">
+                                    <select class="form-select form-control" id="tag" name="tag">
+                                        <?php
+                                        $sql = "SELECT name, value, color FROM defaults WHERE status=1 AND color IS NOT NULL;";
+                                        if ($result = mysqli_query($link, $sql)) {
+                                            while ($row = mysqli_fetch_row($result)) {
+                                                echo "<option value=" . $row[0] . "><span class='badge rounded-pill' style='background-color:#" . $row[2] . ";'>" . $row[1] . "</span></option>";
+                                            }
+                                            mysqli_free_result($result);
+                                        } else {
+                                            echo "<option selected>Někde se stala chyba</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                    <label for="tag">Značka</label>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="" id="entryFormSaveBtn"></button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Zavřít</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <!-- <script>
+    <script>
         $(document).ready(function() {
-            var empId;
+            var day;
+            var contId;
+            $(".addBtn").click(function() {
+                day = $(this).parent().data("day");
+                contId = $(this).parent().data("contractId");
+
+                showEntryForm(false);
+            });
+
+            $(".editBtn").click(function() {
+                showEntryForm(true);
+            });
+
+            var entId;
+            $(".actionIdBtn").click(function() {
+                entId = $(this).parent().data("entryId");
+            });
+
             $(".deleteBtn").click(function() {
-                empId = $(this).data("empId");
                 $('#confDeleteModal').modal('show');
             });
 
             $("#confDeleteBtn").click(function() {
-                window.location = "delEmpScript?id=" + empId;
+                window.location = "delEntScript?id=" + entId;
             });
         });
-    </script> -->
+
+        function showEntryForm(isEdit) {
+            $("#entryFormSaveBtn").attr('class', ("btn btn-outline-" + (isEdit ? "primary" : "success")));
+            $("#entryFormSaveBtn").text(isEdit ? "Uložit" : "Přidat");
+
+            $('#entryFormModal').modal('show');
+        }
+    </script>
 </body>
 
 </html>
