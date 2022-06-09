@@ -1,5 +1,5 @@
 <?php
-require_once "../config.php";
+require_once "../../config.php";
 
 $e = "";
 $sql = "UPDATE employee SET f_name='" . $_POST["fname"] . "', m_name=" . ($_POST["mname"] != "" ? ("'" . $_POST["mname"] . "'") : "NULL") . ", l_name='" . $_POST["lname"] . "', b_date='" . $_POST["bdate"] . "', student=" . (isset($_POST["student"]) ? "1" : "0") . ", maternity=" . (isset($_POST["maternity"]) ? "1" : "0") . ", hpp=" . (isset($_POST["hpp"]) ? "1" : "0") . "

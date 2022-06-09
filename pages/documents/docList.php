@@ -3,19 +3,17 @@ require_once "../../config.php";
 session_start();
 
 $e = "";
-$employees = [];
-$sql = "SELECT id, f_name, m_name, l_name, b_date, student, maternity, hpp FROM employee;";
+$documents = [];
+$sql = "SELECT id, label, date_start, date_end, cash_rate, file_name FROM document;";
 if ($result = mysqli_query($link, $sql)) {
     while ($row = mysqli_fetch_row($result)) {
-        $employees[] = [
+        $documents[] = [
             "id" => $row[0],
-            "fname" => $row[1],
-            "mname" => $row[2],
-            "lname" => $row[3],
-            "bdate" => $row[4],
-            "student" => $row[5],
-            "maternity" => $row[6],
-            "hpp" => $row[7]
+            "label" => $row[1],
+            "dateStart" => $row[2],
+            "dateEnd" => $row[3],
+            "cashRate" => $row[4],
+            "fileName" => $row[5]
         ];
     }
     mysqli_free_result($result);
@@ -29,7 +27,7 @@ if ($result = mysqli_query($link, $sql)) {
 
 <head>
     <meta charset="UTF-8">
-    <title>Seznam zaměstnanců</title>
+    <title>Seznam smluv</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css">
 </head>
@@ -37,37 +35,40 @@ if ($result = mysqli_query($link, $sql)) {
 <body class="text-center m-5 p-5">
     <div class="pb-3">
         <a class="btn btn-outline-secondary" href="../../index.php"><i class="pe-2 bi bi-arrow-left-circle"></i>Zpět</a>
-        <h1 class="d-inline-block ms-2">Seznam zaměstnanců</h1>
+        <h1 class="d-inline-block ms-2">Seznam smluv</h1>
     </div>
-    <a class="btn btn-outline-success" href="empForm.php?add=1"><i class="pe-2 bi bi-person-plus"></i>Přidat zaměstnance</a>
+    <a class="btn btn-outline-success" href="docForm.php?add=1"><i class="pe-2 bi bi-file-earmark-plus"></i>Přidat smlouvu</a>
     <table class="mt-3 table table-striped table-hover">
-        <caption>Seznam zaměstnanců</caption>
+        <caption>Seznam smluv</caption>
         <thead class="table-dark">
             <tr>
                 <th scope="col">#</th>
-                <th scope="col">Jméno</th>
-                <th scope="col">Datum narození</th>
-                <th scope="col">Student</th>
-                <th scope="col">Mateřská dovolená</th>
-                <th scope="col">HPP</th>
+                <th scope="col">Název</th>
+                <th scope="col">Od</th>
+                <th scope="col">Do</th>
+                <th scope="col">Hodinová mzda [Kč/h]</th>
+                <th scope="col">Soubor</th>
                 <th scope="col"></th>
                 <th scope="col"></th>
             </tr>
         </thead>
         <tbody>
             <?php
-            unset($_SESSION["employees"]);
-            for ($i = 0; $i < count($employees); $i++) {
-                $_SESSION["employees"][$employees[$i]["id"]] = $employees[$i];
+            unset($_SESSION["documents"]);
+            for ($i = 0; $i < count($documents); $i++) {
+                $_SESSION["documents"][$documents[$i]["id"]] = $documents[$i];
                 echo '<tr>
                     <th scope="row">' . ($i + 1) . '</th>
-                    <td>' . $employees[$i]["fname"] . ($employees[$i]["mname"] != null ? (" " . $employees[$i]["mname"]) : "") . " " . $employees[$i]["lname"] . '</td>
-                    <td>' . $employees[$i]["bdate"] . '</td>
-                    <td><i class="bi bi-' . ($employees[$i]["student"] == "1" ? "check-circle-fill text-success" : "x-circle-fill text-danger") . '"></i></td>
-                    <td><i class="bi bi-' . ($employees[$i]["maternity"] == "1" ? "check-circle-fill text-success" : "x-circle-fill text-danger") . '"></i></td>
-                    <td><i class="bi bi-' . ($employees[$i]["hpp"] == "1" ? "check-circle-fill text-success" : "x-circle-fill text-danger") . '"></i></td>
-                    <td><a class="btn btn-outline-primary" href="empForm.php?empId=' . $employees[$i]["id"] . '"><i class="bi bi-pencil"></i></a></td>
-                    <td><a class="btn btn-outline-danger deleteBtn" data-emp-id="' . $employees[$i]["id"] . '"><i class="bi bi-person-x"></i></a></td>
+                    <td>' . $documents[$i]["label"] . '</td>
+                    <td>' . $documents[$i]["dateStart"] . '</td>
+                    <td>' . $documents[$i]["dateEnd"] . '</td>
+                    <td>' . $documents[$i]["cashRate"] . '</td>
+                    <td>
+                        <a class="btn btn-outline-info" href="../uploads/' . $documents[$i]["fileName"] . '.pdf" target="_blank"><i class="bi bi-eye"></i> ' . $documents[$i]["fileName"] . '.pdf</a>
+                        <a class="btn btn-outline-secondary" href="../uploads/' . $documents[$i]["fileName"] . '.pdf" download><i class="bi bi-download"></i></a>
+                    </td>
+                    <td><a class="btn btn-outline-primary" href="docForm.php?docId=' . $documents[$i]["id"] . '"><i class="bi bi-pencil"></i></a></td>
+                    <td><a class="btn btn-outline-danger deleteBtn" data-doc-id="' . $documents[$i]["id"] . '" data-doc-file="' . $documents[$i]["fileName"] . '"><i class="bi bi-file-earmark-x"></i></a></td>
                 </tr>';
             }
             ?>
@@ -80,7 +81,7 @@ if ($result = mysqli_query($link, $sql)) {
                     <h5 class="modal-title" id="exampleModalLabel">Opravdu?</h5>
                 </div>
                 <div class="modal-body">
-                    Skutečně chcete odstranit zaměstnance ze systému?
+                    Skutečně chcete odstranit smlouvu ze systému?
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Zavřít</button>
@@ -93,14 +94,16 @@ if ($result = mysqli_query($link, $sql)) {
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
         $(document).ready(function() {
-            var empId;
+            var docId;
+            var docFile;
             $(".deleteBtn").click(function() {
-                empId = $(this).data("empId");
+                docId = $(this).data("docId");
+                docFile = $(this).data("docFile");
                 $('#confDeleteModal').modal('show');
             });
 
             $("#confDeleteBtn").click(function() {
-                window.location = "delEmpScript?id=" + empId;
+                window.location = "delDocScript?id=" + docId + "&file=" + docFile;
             });
         });
     </script>
