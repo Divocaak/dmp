@@ -7,17 +7,17 @@ $sql = "SELECT e.id, e.date, e.minutes, def.name, def.value, def.color, def.stat
 if ($result = mysqli_query($link, $sql)) {
     $entries = [];
     while ($row = mysqli_fetch_row($result)) {
-        $entries[$row[0]] = [
+        $entries[DateTime::createFromFormat("Y-m-d", $row[1])->format("d") . ";" . $row[7]] = [
+            "day" => DateTime::createFromFormat("Y-m-d", $row[1])->format("d"),
+            "contractId" => $row[7],
             "id" => $row[0],
-            "date" => $row[1],
             "minutes" => $row[2],
             "tag" => [
                 "id" => $row[3],
                 "label" => $row[4],
                 "color" => $row[5],
                 "status" => $row[6]
-            ],
-            "contractId" => $row[7]
+            ]
         ];
     }
     mysqli_free_result($result);
@@ -109,7 +109,7 @@ if ($result = mysqli_query($link, $sql)) {
             <tr>
                 <th scope="col">#</th>
                 <?php
-                if(isset($contracts)){
+                if (isset($contracts)) {
                     sort($contracts);
                     foreach ($contracts as $contract) {
                         echo "<th scope='col'>" . $contract["label"] . "</th>";
@@ -120,34 +120,38 @@ if ($result = mysqli_query($link, $sql)) {
         </thead>
         <tbody>
             <?php
-            if(isset($_POST["month"])){
+            if (isset($_POST["month"])) {
                 for ($day = 1; $day < cal_days_in_month(CAL_GREGORIAN, $_POST["month"], $_POST["year"]) + 1; $day++) {
-                    $rowHead = '<th scope="row">' . $day . "." . $_POST["month"] . '.</th>';
-                    $cellTag = "";
-                    $cellContent = "";
+                    $toRet = "";
                     foreach ($contracts as $contract) {
+                        $cellTag = "";
+                        $cellContent = "";
+
                         $hasEntry = false;
-                        
+
                         $cellTag .= "<td data-day='" . $day . "' data-contract-id='" . $contract["id"] . "'";
-                        foreach ($entries as $entryId => $entry) {
-                            if (DateTime::createFromFormat("Y-m-d", $entry["date"])->format("d") == $day && $entry["contractId"] == $contract["id"]) {
-                                $hasEntry = true;
-                                $cellTag .= " data-entry-id='" . $entryId . "'";
-                                $cellContent .= date('H:i', mktime(0, $entry["minutes"]));
-                                $cellContent .= (isset($entry["tag"]["label"]) ? ('<span class="ms-2 badge rounded-pill" style="background-color:#' . $entry["tag"]["color"] . ';">' . ($entry["tag"]["status"] == 0 ? '<i class="bi bi-exclamation-diamond-fill me-1 text-warning"></i>' : "") . $entry["tag"]["label"] . "</span>") : "") . "<br>";
-                                $cellContent .= '<a class="mt-2 me-2 btn btn-outline-primary editBtn actionIdBtn"><i class="bi bi-pencil"></i></a>';
-                                $cellContent .= '<a class="mt-2 btn btn-outline-danger deleteBtn actionIdBtn"><i class="bi bi-trash"></i></a>';
+                        $entryDay = ($day < 10 ? "0" : "") . $day;
+                        $entryCoords = $entryDay . ";" . $contract["id"];
+                        if (isset($entries[$entryCoords])) {
+                            $entry = $entries[$entryCoords];
+                            $hasEntry = true;
+                            $cellTag .= " data-entry-id='" . $entry["id"] . "'";
+                            $cellContent .= date('H:i', mktime(0, $entry["minutes"]));
+                            $cellContent .= (isset($entry["tag"]["label"]) ? ('<span class="ms-2 badge rounded-pill" style="background-color:#' . $entry["tag"]["color"] . ';">' . ($entry["tag"]["status"] == 0 ? '<i class="bi bi-exclamation-diamond-fill me-1 text-warning"></i>' : "") . $entry["tag"]["label"] . "</span>") : "") . "<br>";
+                            $cellContent .= '<a class="mt-2 me-2 btn btn-outline-primary editBtn actionIdBtn"><i class="bi bi-pencil"></i></a>';
+                            $cellContent .= '<a class="mt-2 btn btn-outline-danger deleteBtn actionIdBtn"><i class="bi bi-trash"></i></a>';
+                        } else {
+                            $rowDate = DateTime::createFromFormat("Y-m-d", ($_POST["year"] . "-" . $_POST["month"] . "-" . $day));
+                            if (DateTime::createFromFormat("Y-m-d", $contract["dateStart"]) <= $rowDate && DateTime::createFromFormat("Y-m-d", $contract["dateEnd"]) >= $rowDate) {
+                                $cellContent .= '<a class="mt-2 btn btn-outline-success addBtn"><i class="bi bi-plus"></i></a>';
                             }
                         }
-                        $cellTag .= ">";
-                        
-                        if (!$hasEntry && DateTime::createFromFormat("Y-m-d", $contract["dateStart"])->format("d") <= $day && DateTime::createFromFormat("Y-m-d", $contract["dateEnd"])->format("d") >= $day) {
-                            $cellContent .= '<a class="mt-2 btn btn-outline-success addBtn"><i class="bi bi-plus"></i></a>';
-                        }
-                        
+
                         $cellContent .= "</td>";
+
+                        $toRet .= $cellTag . ">" . $cellContent;
                     }
-                    echo '<tr>' . $rowHead . $cellTag . $cellContent . "</tr>";
+                    echo '<tr><th scope="row">' . $day . "." . $_POST["month"] . '.</th>'  . $toRet . "</tr>";
                 }
             }
             ?>
@@ -253,7 +257,7 @@ if ($result = mysqli_query($link, $sql)) {
             $(".addBtn, .editBtn").click(function() {
                 day = $(this).parent().data("day");
                 contId = $(this).parent().data("contractId");
-                
+
                 showEntryForm($(this).hasClass("editBtn"));
             });
 
@@ -275,21 +279,21 @@ if ($result = mysqli_query($link, $sql)) {
             $("#entryFormSaveBtn").text(isEdit ? "Uložit" : "Přidat");
             $("#entFormHeader").attr("action", ((isEdit ? "edit" : "add") + "EntScript.php"));
 
-            if(isEdit){
+            if (isEdit) {
                 $.post("getEntData.php", {
                     index: entId
                 }, function(data) {
                     var dataDecoded = JSON.parse(data);
                     entFormValues(dataDecoded["id"], Math.floor(dataDecoded["minutes"] / 60), (dataDecoded["minutes"] % 60), dataDecoded["tag"]["id"]);
                 });
-            }else{
+            } else {
                 entFormValues("-", "", "", "NULL");
             }
-            
+
             $('#entryFormModal').modal('show');
         }
-        
-        function entFormValues(id, hours, minutes, tagId){
+
+        function entFormValues(id, hours, minutes, tagId) {
             $("#id").val(id);
             $("#cont").val(contId);
             $("#date").val($("#year").val() + "-" + $("#month").val() + "-" + day);
