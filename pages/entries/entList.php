@@ -1,6 +1,46 @@
 <?php
 require_once "../../config.php";
 session_start();
+
+$sql = "SELECT e.id, e.date, e.minutes, def.name, def.value, def.color, def.status, c.id, c.max_hours, c.max_cash, c.note, d.label, d.date_start, d.date_end, d.cash_rate 
+        FROM entry e LEFT JOIN defaults def ON e.id_category=def.name INNER JOIN contract c ON e.id_contract=c.id INNER JOIN document d ON c.id_document=d.id
+        WHERE YEAR(e.date)=" . $_POST["year"] . " AND MONTH(e.date)=" . $_POST["month"] . " AND " . $_POST["month"] . " BETWEEN MONTH(d.date_start) AND MONTH(d.date_end);";
+if ($result = mysqli_query($link, $sql)) {
+    $entries = [];
+    $contracts = [];
+    while ($row = mysqli_fetch_row($result)) {
+        $entries[$row[0]] = [
+            "id" => $row[0],
+            "date" => $row[1],
+            "minutes" => $row[2],
+            "tag" => [
+                "id" => $row[3],
+                "label" => $row[4],
+                "color" => $row[5],
+                "status" => $row[6]
+            ],
+            "contract" => [
+                "id" => $row[7],
+                "maxHours" => $row[8],
+                "maxCash" => $row[9],
+                "note" => $row[10]
+            ],
+            "document" => [
+                "label" => $row[11],
+                "start" => $row[12],
+                "end" => $row[13],
+                "cashRate" => $row[14]
+            ]
+        ];
+
+        $contractCombo = [$row[7], $row[11]];
+        if (!in_array($contractCombo, $contracts)) {
+            $contracts[] = $contractCombo;
+        }
+    }
+    mysqli_free_result($result);
+    $_SESSION["entries"] = $entries;
+}
 ?>
 
 <!DOCTYPE html>
@@ -18,7 +58,7 @@ session_start();
         <a class="btn btn-outline-secondary" href="../../index.php"><i class="pe-2 bi bi-arrow-left-circle"></i>Zpět</a>
         <h1 class="d-inline-block ms-2">Zápis</h1>
     </div>
-    <form class="needs-validation" novalidate action="addContScript.php" method="post">
+    <form class="needs-validation" novalidate action="?" method="post">
         <div class="row">
             <div class="col">
                 <div class="form-floating mb-3">
@@ -58,48 +98,49 @@ session_start();
                 </div>
             </div>
             <div class="col">
-                <a id="selectEmpBtn" class="btn btn-outline-primary"><i class="pe-1 bi bi-person-bounding-box"></i><i class="pe-2 bi bi-calendar-month"></i>Vybrat zaměstnance a měsíc</a>
+                <button type="submit" class="btn btn-outline-primary"><i class="pe-1 bi bi-person-bounding-box"></i><i class="pe-2 bi bi-calendar-month"></i>Vybrat zaměstnance a měsíc</button>
             </div>
         </div>
     </form>
     <table class="mt-3 table table-striped table-hover">
         <caption>Zápisy</caption>
         <thead class="table-dark">
-            <tr id="tableHeadRow">
+            <tr>
                 <th scope="col">#</th>
                 <?php
-                if(isset($_SESSION["entListData"]["contracts"])){
-                    foreach ($_SESSION["entListData"]["contracts"] as $contract) {
-                        echo "<th scope='col'>" . $contract . "</th>";
+                if(isset($contracts)){
+                    sort($contracts);
+                    foreach ($contracts as $contract) {
+                        echo "<th scope='col'>" . $contract[1] . "</th>";
                     }
                 }
                 ?>
             </tr>
         </thead>
-        <tbody id="tableBody">
+        <tbody>
             <?php
-            if(isset($_SESSION["entListData"]["month"]) && isset($_SESSION["entListData"]["year"])){
-                for ($day = 1; $day < cal_days_in_month(CAL_GREGORIAN, $_SESSION["entListData"]["month"], $_SESSION["entListData"]["year"]) + 1; $day++) {
-                    $rowHead = '<th scope="row">' . $day . "." . $_SESSION["entListData"]["month"] . '.</th>';
+            if(isset($_POST["month"])){
+                for ($day = 1; $day < cal_days_in_month(CAL_GREGORIAN, $_POST["month"], $_POST["year"]) + 1; $day++) {
+                    $rowHead = '<th scope="row">' . $day . "." . $_POST["month"] . '.</th>';
                     $cellTag = "";
                     $cellContent = "";
-                    foreach ($_SESSION["entListData"]["contracts"] as $contract) {
+                    foreach ($contracts as $contract) {
                         $hasEntry = false;
                         
-                        $cellTag .= "<td data-day='" . $day . "' data-contract-id='" . $contract . "'";
-                        foreach ($_SESSION["entListData"]["entries"] as $entryId => $entry) {
-                            if (DateTime::createFromFormat("Y-m-d", $entry["date"])->format("d") == $day && $entry["contract"]["id"] == $contract) {
+                        $cellTag .= "<td data-day='" . $day . "' data-contract-id='" . $contract[0] . "'";
+                        foreach ($entries as $entryId => $entry) {
+                            if (DateTime::createFromFormat("Y-m-d", $entry["date"])->format("d") == $day && $entry["contract"]["id"] == $contract[0]) {
                                 $hasEntry = true;
                                 $cellTag .= " data-entry-id='" . $entryId . "'";
                                 $cellContent .= date('H:i', mktime(0, $entry["minutes"]));
-                                $cellContent .= (isset($entry["tag"]["label"]) ? ('<span class="ms-2 badge rounded-pill" style="background-color:#' . $entry["tag"]["color"] . ';">' . $entry["tag"]["label"] . "</span>") : "") . "<br>";
+                                $cellContent .= (isset($entry["tag"]["label"]) ? ('<span class="ms-2 badge rounded-pill" style="background-color:#' . $entry["tag"]["color"] . ';">' . ($entry["tag"]["status"] == 0 ? '<i class="bi bi-exclamation-diamond-fill me-1 text-warning"></i>' : "") . $entry["tag"]["label"] . "</span>") : "") . "<br>";
                                 $cellContent .= '<a class="mt-2 me-2 btn btn-outline-primary editBtn actionIdBtn"><i class="bi bi-pencil"></i></a>';
                                 $cellContent .= '<a class="mt-2 btn btn-outline-danger deleteBtn actionIdBtn"><i class="bi bi-trash"></i></a>';
                             }
                         }
                         $cellTag .= ">";
                         
-                        if (!$hasEntry) {
+                        if (!$hasEntry && DateTime::createFromFormat("Y-m-d", $entry["document"]["start"])->format("d") <= $day && DateTime::createFromFormat("Y-m-d", $entry["document"]["end"])->format("d") >= $day) {
                             $cellContent .= '<a class="mt-2 btn btn-outline-success addBtn"><i class="bi bi-plus"></i></a>';
                         }
                         
@@ -107,7 +148,6 @@ session_start();
                     }
                     echo '<tr>' . $rowHead . $cellTag . $cellContent . "</tr>";
                 }
-                unset($_SESSION["entListData"]);
             }
             ?>
         </tbody>
@@ -226,16 +266,6 @@ session_start();
 
             $("#tagSelect").change(function() {
                 $("#selectedTagIndicator").css('background-color', ("#" + $("#tagSelect option:selected").data("color")));
-            });
-
-            $("#selectEmpBtn").click(function(){
-                $.post("getAllEntries.php", {
-                    month: $("#month").val(), year: $("#year").val()
-                }, function(data) {
-                    console.log(data);
-                    $("#tableHeadRow").load(location.href + " #tableHeadRow>*");
-                    $("#tableBody").load(location.href + " #tableBody>*");
-                });
             });
         });
 
