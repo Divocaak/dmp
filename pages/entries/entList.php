@@ -1,10 +1,10 @@
 <?php
 require_once "../../config.php";
 session_start();
-
 $sql = "SELECT e.id, e.date, e.minutes, def.name, def.value, def.color, def.status, c.id, c.max_hours, c.max_cash, c.note, d.label, d.date_start, d.date_end, d.cash_rate 
         FROM entry e LEFT JOIN defaults def ON e.id_category=def.name INNER JOIN contract c ON e.id_contract=c.id INNER JOIN document d ON c.id_document=d.id
-        WHERE YEAR(e.date)=" . $_POST["year"] . " AND MONTH(e.date)=" . $_POST["month"] . " AND " . $_POST["month"] . " BETWEEN MONTH(d.date_start) AND MONTH(d.date_end);";
+        WHERE YEAR(e.date)=" . $_POST["year"] . " AND MONTH(e.date)=" . $_POST["month"] . " AND " . $_POST["month"] . " BETWEEN MONTH(d.date_start) AND MONTH(d.date_end) AND c.id_employee=" . $_POST["emp"] . ";";
+echo $sql;
 if ($result = mysqli_query($link, $sql)) {
     $entries = [];
     $contracts = [];
