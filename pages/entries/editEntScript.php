@@ -2,9 +2,14 @@
 require_once "../../config.php";
 
 $e = "";
-$sql = "UPDATE entry SET minutes=" . (($_POST["hours"] * 60) + $_POST["minutes"]) . ", id_category=" . $_POST["tagSelect"] . " WHERE id=" . $_POST["id"] . ";";
-if (!mysqli_query($link, $sql)) {
-    $e = $sql . "<br>" . mysqli_error($link);
+$minutes = ((floatval($_POST["hours"]) * 60) + floatval($_POST["minutes"]));
+if ($minutes > 0) {
+    $sql = "UPDATE entry SET minutes=" . $minutes . ", id_category=" . $_POST["tagSelect"] . " WHERE id=" . $_POST["id"] . ";";
+    if (!mysqli_query($link, $sql)) {
+        $e = $sql . "<br>" . mysqli_error($link);
+    }
+} else {
+    $e = "Zápis nesmí obsahovat hodnotu odpracových minut rovnou nule.";
 }
 ?>
 

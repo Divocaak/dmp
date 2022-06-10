@@ -179,25 +179,37 @@ session_start();
                 <div class="modal-body">
                     <form class="needs-validation" novalidate action="editEntScript.php" method="post" id="entFormHeader">
                         <div class="row">
-                            <div class="col">
+                            <div class="col-4">
                                 <div class="form-floating mb-3 p-2">
                                     <input type="text" class="form-control" id="id" name="id" readonly value="">
-                                    <label for="id">ID</label>
+                                    <label for="id">ID záznamu</label>
                                 </div>
                             </div>
-                            <div class="col">
+                            <div class="col-4">
+                                <div class="form-floating mb-3 p-2">
+                                    <input type="text" class="form-control" id="cont" name="cont" readonly value="">
+                                    <label for="id">ID prac. vztahu</label>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="form-floating mb-3 p-2">
+                                    <input type="text" class="form-control" id="date" name="date" readonly value="">
+                                    <label for="id">Datum</label>
+                                </div>
+                            </div>
+                            <div class="col-4">
                                 <div class="form-floating mb-3 p-2">
                                     <input type="number" class="form-control" id="hours" name="hours" required value="">
                                     <label for="hours">Hodiny</label>
                                 </div>
                             </div>
-                            <div class="col">
+                            <div class="col-4">
                                 <div class="form-floating mb-3 p-2">
                                     <input type="number" class="form-control" id="minutes" name="minutes" required value="">
                                     <label for="minutes">Minuty</label>
                                 </div>
                             </div>
-                            <div class="col">
+                            <div class="col-4">
                                 <div class="form-floating mb-3 p-2 rounded" id="selectedTagIndicator" style="background-color: transparent;">
                                     <select class="form-select form-control" id="tagSelect" name="tagSelect">
                                         <?php
@@ -229,23 +241,20 @@ session_start();
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
+        var day;
+        var contId;
+        var entId;
+
         $(document).ready(function() {
-            var day;
-            var contId;
-            $(".addBtn").click(function() {
-                day = $(this).parent().data("day");
-                contId = $(this).parent().data("contractId");
-
-                showEntryForm(false);
-            });
-
-            var entId;
             $(".actionIdBtn").click(function() {
                 entId = $(this).parent().data("entryId");
             });
 
-            $(".editBtn").click(function() {
-                showEntryForm(true, entId);
+            $(".addBtn, .editBtn").click(function() {
+                day = $(this).parent().data("day");
+                contId = $(this).parent().data("contractId");
+                
+                showEntryForm($(this).hasClass("editBtn"));
             });
 
             $(".deleteBtn").click(function() {
@@ -261,7 +270,7 @@ session_start();
             });
         });
 
-        function showEntryForm(isEdit, entId) {
+        function showEntryForm(isEdit) {
             $("#entryFormSaveBtn").attr('class', ("btn btn-outline-" + (isEdit ? "primary" : "success")));
             $("#entryFormSaveBtn").text(isEdit ? "Uložit" : "Přidat");
             $("#entFormHeader").attr("action", ((isEdit ? "edit" : "add") + "EntScript.php"));
@@ -282,6 +291,8 @@ session_start();
         
         function entFormValues(id, hours, minutes, tagId){
             $("#id").val(id);
+            $("#cont").val(contId);
+            $("#date").val($("#year").val() + "-" + $("#month").val() + "-" + day);
             $("#hours").val(hours);
             $("#minutes").val(minutes);
             $("#tagSelect").val(tagId);
