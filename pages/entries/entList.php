@@ -62,94 +62,52 @@ session_start();
             </div>
         </div>
     </form>
-
-    <?php
-    $month = 5;
-    $year = 2022;
-
-    $sql = "SELECT e.id, e.date, e.minutes, def.name, def.value, def.color, c.id, c.max_hours, c.max_cash, c.note, d.label, d.date_start, d.date_end, d.cash_rate 
-            FROM entry e LEFT JOIN defaults def ON e.id_category=def.name INNER JOIN contract c ON e.id_contract=c.id INNER JOIN document d ON c.id_document=d.id
-            WHERE YEAR(e.date)=" . $year . " AND MONTH(e.date)=" . $month . ";";
-    if ($result = mysqli_query($link, $sql)) {
-        $entries = [];
-        $contracts = [];
-        while ($row = mysqli_fetch_row($result)) {
-            $entries[$row[0]] = [
-                "id" => $row[0],
-                "date" => $row[1],
-                "minutes" => $row[2],
-                "tag" => [
-                    "id" => $row[3],
-                    "label" => $row[4],
-                    "color" => $row[5]
-                ],
-                "contract" => [
-                    "id" => $row[6],
-                    "maxHours" => $row[7],
-                    "maxCash" => $row[8],
-                    "note" => $row[9]
-                ],
-                "document" => [
-                    "label" => $row[10],
-                    "start" => $row[11],
-                    "end" => $row[12],
-                    "cashRate" => $row[13]
-                ]
-            ];
-
-            if (!in_array($row[6], $contracts)) {
-                $contracts[] = $row[6];
-            }
-        }
-        mysqli_free_result($result);
-        $_SESSION["entries"] = $entries;
-    } else {
-        echo "eee";
-    }
-    ?>
-
     <table class="mt-3 table table-striped table-hover">
         <caption>Zápisy</caption>
         <thead class="table-dark">
-            <tr>
+            <tr id="tableHeadRow">
                 <th scope="col">#</th>
                 <?php
-                sort($contracts);
-                foreach ($contracts as $contract) {
-                    echo "<th scope='col'>" . $contract . "</th>";
+                if(isset($_SESSION["entListData"]["contracts"])){
+                    foreach ($_SESSION["entListData"]["contracts"] as $contract) {
+                        echo "<th scope='col'>" . $contract . "</th>";
+                    }
                 }
                 ?>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="tableBody">
             <?php
-            for ($day = 1; $day < cal_days_in_month(CAL_GREGORIAN, $month, $year) + 1; $day++) {
-                $rowHead = '<th scope="row">' . $day . "." . $month . '.</th>';
-                $cellTag = "";
-                $cellContent = "";
-                foreach ($contracts as $contract) {
-                    $hasEntry = false;
-
-                    $cellTag .= "<td data-day='" . $day . "' data-contract-id='" . $contract . "'";
-                    foreach ($entries as $entryId => $entry) {
-                        if (DateTime::createFromFormat("Y-m-d", $entry["date"])->format("d") == $day && $entry["contract"]["id"] == $contract) {
-                            $hasEntry = true;
-                            $cellTag .= " data-entry-id='" . $entryId . "'";
-                            $cellContent .= date('H:i', mktime(0, $entry["minutes"]));
-                            $cellContent .= (isset($entry["tag"]["label"]) ? ('<span class="ms-2 badge rounded-pill" style="background-color:#' . $entry["tag"]["color"] . ';">' . $entry["tag"]["label"] . "</span>") : "") . "<br>";
-                            $cellContent .= '<a class="mt-2 me-2 btn btn-outline-primary editBtn actionIdBtn"><i class="bi bi-pencil"></i></a>';
-                            $cellContent .= '<a class="mt-2 btn btn-outline-danger deleteBtn actionIdBtn"><i class="bi bi-trash"></i></a>';
+            if(isset($_SESSION["entListData"]["month"]) && isset($_SESSION["entListData"]["year"])){
+                for ($day = 1; $day < cal_days_in_month(CAL_GREGORIAN, $_SESSION["entListData"]["month"], $_SESSION["entListData"]["year"]) + 1; $day++) {
+                    $rowHead = '<th scope="row">' . $day . "." . $_SESSION["entListData"]["month"] . '.</th>';
+                    $cellTag = "";
+                    $cellContent = "";
+                    foreach ($_SESSION["entListData"]["contracts"] as $contract) {
+                        $hasEntry = false;
+                        
+                        $cellTag .= "<td data-day='" . $day . "' data-contract-id='" . $contract . "'";
+                        foreach ($_SESSION["entListData"]["entries"] as $entryId => $entry) {
+                            if (DateTime::createFromFormat("Y-m-d", $entry["date"])->format("d") == $day && $entry["contract"]["id"] == $contract) {
+                                $hasEntry = true;
+                                $cellTag .= " data-entry-id='" . $entryId . "'";
+                                $cellContent .= date('H:i', mktime(0, $entry["minutes"]));
+                                $cellContent .= (isset($entry["tag"]["label"]) ? ('<span class="ms-2 badge rounded-pill" style="background-color:#' . $entry["tag"]["color"] . ';">' . $entry["tag"]["label"] . "</span>") : "") . "<br>";
+                                $cellContent .= '<a class="mt-2 me-2 btn btn-outline-primary editBtn actionIdBtn"><i class="bi bi-pencil"></i></a>';
+                                $cellContent .= '<a class="mt-2 btn btn-outline-danger deleteBtn actionIdBtn"><i class="bi bi-trash"></i></a>';
+                            }
                         }
+                        $cellTag .= ">";
+                        
+                        if (!$hasEntry) {
+                            $cellContent .= '<a class="mt-2 btn btn-outline-success addBtn"><i class="bi bi-plus"></i></a>';
+                        }
+                        
+                        $cellContent .= "</td>";
                     }
-                    $cellTag .= ">";
-
-                    if (!$hasEntry) {
-                        $cellContent .= '<a class="mt-2 btn btn-outline-success addBtn"><i class="bi bi-plus"></i></a>';
-                    }
-
-                    $cellContent .= "</td>";
+                    echo '<tr>' . $rowHead . $cellTag . $cellContent . "</tr>";
                 }
-                echo '<tr>' . $rowHead . $cellTag . $cellContent . "</tr>";
+                unset($_SESSION["entListData"]);
             }
             ?>
         </tbody>
@@ -247,6 +205,7 @@ session_start();
 
         $(document).ready(function() {
             $(".actionIdBtn").click(function() {
+                console.log("asd");
                 entId = $(this).parent().data("entryId");
             });
 
@@ -268,6 +227,16 @@ session_start();
             $("#tagSelect").change(function() {
                 $("#selectedTagIndicator").css('background-color', ("#" + $("#tagSelect option:selected").data("color")));
             });
+
+            $("#selectEmpBtn").click(function(){
+                $.post("getAllEntries.php", {
+                    month: $("#month").val(), year: $("#year").val()
+                }, function(data) {
+                    console.log(data);
+                    $("#tableHeadRow").load(location.href + " #tableHeadRow>*");
+                    $("#tableBody").load(location.href + " #tableBody>*");
+                });
+            });
         });
 
         function showEntryForm(isEdit) {
@@ -280,7 +249,7 @@ session_start();
                     index: entId
                 }, function(data) {
                     var dataDecoded = JSON.parse(data);
-                    entFormValues(dataDecoded["id"], Math.floor(dataDecoded["minutes"] / 60), (dataDecoded["minutes"] % 60), dataDecoded["tag"]["id"])
+                    entFormValues(dataDecoded["id"], Math.floor(dataDecoded["minutes"] / 60), (dataDecoded["minutes"] % 60), dataDecoded["tag"]["id"]);
                 });
             }else{
                 entFormValues("-", "", "", "NULL");
