@@ -63,12 +63,15 @@ if ($result = mysqli_query($link, $sql)) {
         <div class="row">
             <div class="col">
                 <div class="form-floating mb-3">
-                    <select class="form-select form-control" id="emp" name="emp" required>
+                    <select class="form-select form-control" id="emp" name="emp" required value="<?php echo isset($_POST["emp"]) ? $_POST["emp"] : '';?>">
                         <?php
+                        $defVal = isset($_POST["emp"]) ? $_POST["emp"] : "";
+                        echo "<option value=NULL" . ($defVal == "" ? " selected" : "") . ">-</option>";
+
                         $sql = "SELECT id, f_name, m_name, l_name, b_date FROM employee;";
                         if ($result = mysqli_query($link, $sql)) {
                             while ($row = mysqli_fetch_row($result)) {
-                                echo "<option value=" . $row[0] . ">" . $row[1] . ($row[2] != "" ? (" " . $row[2]) : "") . " " . $row[3] . " (*" . $row[4] . ")</option>";
+                                echo "<option value=" . $row[0] . ($defVal == $row[0] ? " selected" : "") . ">" . $row[1] . ($row[2] != "" ? (" " . $row[2]) : "") . " " . $row[3] . " (*" . $row[4] . ")</option>";
                             }
                             mysqli_free_result($result);
                         } else {
@@ -83,9 +86,10 @@ if ($result = mysqli_query($link, $sql)) {
                 <div class="form-floating mb-3">
                     <select class="form-select form-control" id="month" name="month" required>
                         <?php
+                        $defVal = isset($_POST["month"]) ? $_POST["month"] : date("m");
                         $m = ["leden", "únor", "březen", "duben", "květen", "červen", "červenec", "srpen", "září", "říjen", "listopad", "prosinec"];
                         for ($i = 0; $i < count($m); $i++) {
-                            echo "<option value=" . ($i + 1) . (($i + 1) == date("m") ? " selected" : "") . ">" . $m[$i] . "</option>";
+                            echo "<option value=" . ($i + 1) . ($defVal == ($i + 1) ? " selected" : "") . ">" . $m[$i] . "</option>";
                         }
                         ?>
                     </select>
@@ -94,7 +98,7 @@ if ($result = mysqli_query($link, $sql)) {
             </div>
             <div class="col">
                 <div class="form-floating mb-3">
-                    <input type="number" class="form-control" id="year" name="year" required value="<?php echo date("Y"); ?>">
+                    <input type="number" class="form-control" id="year" name="year" required value="<?php echo isset($_POST["year"]) ? $_POST["year"] : date("Y");?>">
                     <label for="year">Rok</label>
                 </div>
             </div>
