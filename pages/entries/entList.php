@@ -6,18 +6,20 @@ $sql = "SELECT e.id, e.date, e.minutes, def.name, def.value, def.color, def.stat
         WHERE YEAR(e.date)=" . $_POST["year"] . " AND MONTH(e.date)=" . $_POST["month"] . " AND c.id_employee=" . $_POST["emp"] . ";";
 if ($result = mysqli_query($link, $sql)) {
     $entries = [];
+    $tags = [];
     while ($row = mysqli_fetch_row($result)) {
         $entries[DateTime::createFromFormat("Y-m-d", $row[1])->format("d") . ";" . $row[7]] = [
             "day" => DateTime::createFromFormat("Y-m-d", $row[1])->format("d"),
             "contractId" => $row[7],
             "id" => $row[0],
             "minutes" => $row[2],
-            "tag" => [
-                "id" => $row[3],
-                "label" => $row[4],
-                "color" => $row[5],
-                "status" => $row[6]
-            ]
+            "tagId" => $row[3]
+        ];
+
+        $tags[$row[3]] = [
+            "label" => $row[4],
+            "color" => $row[5],
+            "status" => $row[6]
         ];
     }
     mysqli_free_result($result);
@@ -63,7 +65,7 @@ if ($result = mysqli_query($link, $sql)) {
         <div class="row">
             <div class="col">
                 <div class="form-floating mb-3">
-                    <select class="form-select form-control" id="emp" name="emp" required value="<?php echo isset($_POST["emp"]) ? $_POST["emp"] : '';?>">
+                    <select class="form-select form-control" id="emp" name="emp" required value="<?php echo isset($_POST["emp"]) ? $_POST["emp"] : ''; ?>">
                         <?php
                         $defVal = isset($_POST["emp"]) ? $_POST["emp"] : "";
                         echo "<option value=NULL" . ($defVal == "" ? " selected" : "") . ">-</option>";
@@ -98,7 +100,7 @@ if ($result = mysqli_query($link, $sql)) {
             </div>
             <div class="col">
                 <div class="form-floating mb-3">
-                    <input type="number" class="form-control" id="year" name="year" required value="<?php echo isset($_POST["year"]) ? $_POST["year"] : date("Y");?>">
+                    <input type="number" class="form-control" id="year" name="year" required value="<?php echo isset($_POST["year"]) ? $_POST["year"] : date("Y"); ?>">
                     <label for="year">Rok</label>
                 </div>
             </div>
@@ -126,14 +128,13 @@ if ($result = mysqli_query($link, $sql)) {
         <tbody>
             <?php
             if (isset($_POST["month"])) {
+                $contSums = [];
                 for ($day = 1; $day < cal_days_in_month(CAL_GREGORIAN, $_POST["month"], $_POST["year"]) + 1; $day++) {
                     $toRet = "";
                     $sums = [];
                     foreach ($contracts as $contract) {
                         $cellTag = "";
                         $cellContent = "";
-
-                        $hasEntry = false;
 
                         $cellTag .= "<td data-day='" . $day . "' data-contract-id='" . $contract["id"] . "'";
                         $entryDay = ($day < 10 ? "0" : "") . $day;
@@ -145,11 +146,19 @@ if ($result = mysqli_query($link, $sql)) {
                             $sums["minutes"] += $entry["minutes"];
                             $sums["cash"] += $cash;
 
-                            $hasEntry = true;
+                            $contSums[$contract["id"]]["minutes"] += $entry["minutes"];
+                            $contSums[$contract["id"]]["cash"] += $cash;
+
                             $cellTag .= " data-entry-id='" . $entry["id"] . "'";
                             $cellContent .= date('H:i', mktime(0, $entry["minutes"])) . " (<b>" . $cash . " Kč</b>)";
-                            $cellContent .= (isset($entry["tag"]["label"]) ? ('<span class="ms-2 badge rounded-pill" style="background-color:#' . $entry["tag"]["color"] . ';">' . ($entry["tag"]["status"] == 0 ? '<i class="bi bi-exclamation-diamond-fill me-1 text-warning"></i>' : "") . $entry["tag"]["label"] . "</span>") : "") . "<br>";
-                            $cellContent .= '<a class="mt-2 me-2 btn btn-outline-primary editBtn actionIdBtn"><i class="bi bi-pencil"></i></a>';
+
+                            if (isset($entry["tagId"])) {
+                                $cellContent .= renderTag($tags[$entry["tagId"]]);
+                                $contSums[$contract["id"]]["tags"][$entry["tagId"]]["minutes"] += $entry["minutes"];
+                                $contSums[$contract["id"]]["tags"][$entry["tagId"]]["cash"] += $cash;
+                            }
+
+                            $cellContent .= '<br><a class="mt-2 me-2 btn btn-outline-primary editBtn actionIdBtn"><i class="bi bi-pencil"></i></a>';
                             $cellContent .= '<a class="mt-2 btn btn-outline-danger deleteBtn actionIdBtn"><i class="bi bi-trash"></i></a>';
                         } else {
                             $rowDate = DateTime::createFromFormat("Y-m-d", ($_POST["year"] . "-" . $_POST["month"] . "-" . $day));
@@ -165,6 +174,20 @@ if ($result = mysqli_query($link, $sql)) {
                     $sumsCell = $sums != null ? (date('H:i', mktime(0, $sums["minutes"])) . " (<b>" . $sums["cash"] . " Kč</b>)") : "";
                     echo '<tr><th scope="row">' . $day . "." . $_POST["month"] . '.</th>'  . $toRet . "<td>" . $sumsCell . "</td></tr>";
                 }
+
+                echo '<tr><th scope="row">Sumy</th>';
+                foreach ($contSums as $contSum) {
+                    $toRet = "<td>" . date('H:i', mktime(0, $contSum["minutes"])) . " (<b>" . $contSum["cash"] . " Kč</b>)";
+                    foreach ($contSum["tags"] as $key => $tag) {
+                        $toRet .= "<br>" . renderTag($tags[$key]) . " " . date('H:i', mktime(0, $tag["minutes"])) . " (<b>" . $tag["cash"] . " Kč</b>)";
+                    }
+                    echo $toRet . "</td>";
+                }
+                echo "<td></td></tr>";
+            }
+
+            function renderTag($tag){
+                return ('<span class="ms-2 badge rounded-pill" style="background-color:#' . $tag["color"] . ';">' . ($tag["status"] == 0 ? '<i class="bi bi-exclamation-diamond-fill me-1 text-warning"></i>' : "") . $tag["label"] . "</span>"); 
             }
             ?>
         </tbody>
@@ -292,7 +315,8 @@ if ($result = mysqli_query($link, $sql)) {
 
             if (isEdit) {
                 $.post("getEntData.php", {
-                    day: day, contId: contId
+                    day: day,
+                    contId: contId
                 }, function(data) {
                     var dataDecoded = JSON.parse(data);
                     entFormValues(dataDecoded["id"], Math.floor(dataDecoded["minutes"] / 60), (dataDecoded["minutes"] % 60), dataDecoded["tag"]["id"]);
