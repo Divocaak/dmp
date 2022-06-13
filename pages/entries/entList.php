@@ -116,8 +116,9 @@ if ($result = mysqli_query($link, $sql)) {
                 if (isset($contracts)) {
                     sort($contracts);
                     foreach ($contracts as $contract) {
-                        echo "<th scope='col'>" . $contract["label"] . "</th>";
+                        echo "<th scope='col'>" . $contract["label"] . " (" . $contract["cashRate"] . " Kč/h)</th>";
                     }
+                    echo "<th scope='col'>Sumy</th>";
                 }
                 ?>
             </tr>
@@ -127,6 +128,7 @@ if ($result = mysqli_query($link, $sql)) {
             if (isset($_POST["month"])) {
                 for ($day = 1; $day < cal_days_in_month(CAL_GREGORIAN, $_POST["month"], $_POST["year"]) + 1; $day++) {
                     $toRet = "";
+                    $sums = [];
                     foreach ($contracts as $contract) {
                         $cellTag = "";
                         $cellContent = "";
@@ -138,9 +140,14 @@ if ($result = mysqli_query($link, $sql)) {
                         $entryCoords = $entryDay . ";" . $contract["id"];
                         if (isset($entries[$entryCoords])) {
                             $entry = $entries[$entryCoords];
+
+                            $cash = round(($entry["minutes"] * ($contract["cashRate"] / 60)), 1);
+                            $sums["minutes"] += $entry["minutes"];
+                            $sums["cash"] += $cash;
+
                             $hasEntry = true;
                             $cellTag .= " data-entry-id='" . $entry["id"] . "'";
-                            $cellContent .= date('H:i', mktime(0, $entry["minutes"]));
+                            $cellContent .= date('H:i', mktime(0, $entry["minutes"])) . " (<b>" . $cash . " Kč</b>)";
                             $cellContent .= (isset($entry["tag"]["label"]) ? ('<span class="ms-2 badge rounded-pill" style="background-color:#' . $entry["tag"]["color"] . ';">' . ($entry["tag"]["status"] == 0 ? '<i class="bi bi-exclamation-diamond-fill me-1 text-warning"></i>' : "") . $entry["tag"]["label"] . "</span>") : "") . "<br>";
                             $cellContent .= '<a class="mt-2 me-2 btn btn-outline-primary editBtn actionIdBtn"><i class="bi bi-pencil"></i></a>';
                             $cellContent .= '<a class="mt-2 btn btn-outline-danger deleteBtn actionIdBtn"><i class="bi bi-trash"></i></a>';
@@ -155,7 +162,8 @@ if ($result = mysqli_query($link, $sql)) {
 
                         $toRet .= $cellTag . ">" . $cellContent;
                     }
-                    echo '<tr><th scope="row">' . $day . "." . $_POST["month"] . '.</th>'  . $toRet . "</tr>";
+                    $sumsCell = $sums != null ? (date('H:i', mktime(0, $sums["minutes"])) . " (<b>" . $sums["cash"] . " Kč</b>)") : "";
+                    echo '<tr><th scope="row">' . $day . "." . $_POST["month"] . '.</th>'  . $toRet . "<td>" . $sumsCell . "</td></tr>";
                 }
             }
             ?>
@@ -254,7 +262,6 @@ if ($result = mysqli_query($link, $sql)) {
 
         $(document).ready(function() {
             $(".actionIdBtn").click(function() {
-                console.log("asd");
                 entId = $(this).parent().data("entryId");
             });
 
@@ -285,7 +292,7 @@ if ($result = mysqli_query($link, $sql)) {
 
             if (isEdit) {
                 $.post("getEntData.php", {
-                    index: entId
+                    day: day, contId: contId
                 }, function(data) {
                     var dataDecoded = JSON.parse(data);
                     entFormValues(dataDecoded["id"], Math.floor(dataDecoded["minutes"] / 60), (dataDecoded["minutes"] % 60), dataDecoded["tag"]["id"]);
