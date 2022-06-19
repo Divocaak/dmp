@@ -109,102 +109,109 @@ if ($result = mysqli_query($link, $sql)) {
             </div>
         </div>
     </form>
-    <table class="mt-3 table table-striped table-hover">
-        <caption>Zápisy</caption>
-        <thead class="table-dark">
-            <tr>
-                <th scope="col">#</th>
-                <?php
-                if (isset($contracts)) {
-                    sort($contracts);
-                    foreach ($contracts as $contract) {
-                        echo "<th scope='col'>" . $contract["label"] . " (" . $contract["cashRate"] . " Kč/h)</th>";
+    <div class="table-responsive">
+        <table class="mt-3 table table-striped table-hover">
+            <caption>Zápisy</caption>
+            <thead class="table-dark">
+                <tr>
+                    <th scope="col">#</th>
+                    <?php
+                    if (isset($contracts)) {
+                        sort($contracts);
+                        foreach ($contracts as $contract) {
+                            echo "<th scope='col'>" . $contract["label"] . " (" . $contract["cashRate"] . " Kč/h)</th>";
+                        }
+                        echo "<th scope='col'>Sumy</th>";
                     }
-                    echo "<th scope='col'>Sumy</th>";
+                    ?>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                if (isset($_POST["month"])) {
+                    $contSums = [];
+                    $monthSums = [];
+                    for ($day = 1; $day < cal_days_in_month(CAL_GREGORIAN, $_POST["month"], $_POST["year"]) + 1; $day++) {
+                        $toRet = "";
+                        $daySums = [];
+                        foreach ($contracts as $contract) {
+                            $cellTag = "";
+                            $cellContent = "";
+
+                            $cellTag .= "<td data-day='" . $day . "' data-contract-id='" . $contract["id"] . "'";
+                            $entryDay = ($day < 10 ? "0" : "") . $day;
+                            $entryCoords = $entryDay . ";" . $contract["id"];
+                            if (isset($entries[$entryCoords])) {
+                                $entry = $entries[$entryCoords];
+
+                                $cash = round(($entry["minutes"] * ($contract["cashRate"] / 60)), 1);
+                                $daySums["minutes"] += $entry["minutes"];
+                                $daySums["cash"] += $cash;
+
+                                $contSums[$contract["id"]]["minutes"] += $entry["minutes"];
+                                $contSums[$contract["id"]]["cash"] += $cash;
+
+                                $monthSums["minutes"] += $entry["minutes"];
+                                $monthSums["cash"] += $cash;
+
+                                $cellTag .= " data-entry-id='" . $entry["id"] . "'";
+                                $cellContent .= date('H:i', mktime(0, $entry["minutes"])) . " (<b>" . $cash . " Kč</b>)";
+
+                                if (isset($entry["tagId"])) {
+                                    $cellContent .= renderTag($tags[$entry["tagId"]]);
+                                    $contSums[$contract["id"]]["tags"][$entry["tagId"]]["minutes"] += $entry["minutes"];
+                                    $contSums[$contract["id"]]["tags"][$entry["tagId"]]["cash"] += $cash;
+
+                                    $monthSums["tags"][$entry["tagId"]]["minutes"] += $entry["minutes"];
+                                    $monthSums["tags"][$entry["tagId"]]["cash"] += $cash;
+                                }
+
+                                $cellContent .= '<br><a class="mt-2 me-2 btn btn-outline-primary editBtn actionIdBtn"><i class="bi bi-pencil"></i></a>';
+                                $cellContent .= '<a class="mt-2 btn btn-outline-danger deleteBtn actionIdBtn"><i class="bi bi-trash"></i></a>';
+                            } else {
+                                $rowDate = DateTime::createFromFormat("Y-m-d", ($_POST["year"] . "-" . $_POST["month"] . "-" . $day));
+                                if (DateTime::createFromFormat("Y-m-d", $contract["dateStart"]) <= $rowDate && DateTime::createFromFormat("Y-m-d", $contract["dateEnd"]) >= $rowDate) {
+                                    $cellContent .= '<a class="mt-2 btn btn-outline-success addBtn"><i class="bi bi-plus"></i></a>';
+                                }
+                            }
+
+                            $cellContent .= "</td>";
+
+                            $toRet .= $cellTag . ">" . $cellContent;
+                        }
+                        $sumsCell = $daySums != null ? (date('H:i', mktime(0, $daySums["minutes"])) . " (<b>" . $daySums["cash"] . " Kč</b>)") : "";
+                        echo '<tr><th scope="row">' . $day . "." . $_POST["month"] . '.</th>'  . $toRet . "<td>" . $sumsCell . "</td></tr>";
+                    }
+
+                    echo '<tr><th scope="row">Sumy</th>';
+                    foreach ($contSums as $contSum) {
+                        $toRet = "<td>" . date('H:i', mktime(0, $contSum["minutes"])) . " (<b>" . $contSum["cash"] . " Kč</b>)";
+                        foreach ($contSum["tags"] as $key => $tag) {
+                            $toRet .= "<br>" . renderTag($tags[$key]) . " " . date('H:i', mktime(0, $tag["minutes"])) . " (<b>" . $tag["cash"] . " Kč</b>)";
+                        }
+                        echo $toRet . "</td>";
+                    }
+                    echo "<td></td></tr>";
+                }
+
+                function renderTag($tag)
+                {
+                    return ('<span class="ms-2 badge rounded-pill" style="background-color:#' . $tag["color"] . ';">' . ($tag["status"] == 0 ? '<i class="bi bi-exclamation-diamond-fill me-1 text-warning"></i>' : "") . $tag["label"] . "</span>");
                 }
                 ?>
-            </tr>
-        </thead>
-        <tbody>
-            <?php
-            if (isset($_POST["month"])) {
-                $contSums = [];
-                $monthSums = [];
-                for ($day = 1; $day < cal_days_in_month(CAL_GREGORIAN, $_POST["month"], $_POST["year"]) + 1; $day++) {
-                    $toRet = "";
-                    $daySums = [];
-                    foreach ($contracts as $contract) {
-                        $cellTag = "";
-                        $cellContent = "";
-
-                        $cellTag .= "<td data-day='" . $day . "' data-contract-id='" . $contract["id"] . "'";
-                        $entryDay = ($day < 10 ? "0" : "") . $day;
-                        $entryCoords = $entryDay . ";" . $contract["id"];
-                        if (isset($entries[$entryCoords])) {
-                            $entry = $entries[$entryCoords];
-
-                            $cash = round(($entry["minutes"] * ($contract["cashRate"] / 60)), 1);
-                            $daySums["minutes"] += $entry["minutes"];
-                            $daySums["cash"] += $cash;
-
-                            $contSums[$contract["id"]]["minutes"] += $entry["minutes"];
-                            $contSums[$contract["id"]]["cash"] += $cash;
-
-                            $monthSums["minutes"] += $entry["minutes"];
-                            $monthSums["cash"] += $cash;
-
-                            $cellTag .= " data-entry-id='" . $entry["id"] . "'";
-                            $cellContent .= date('H:i', mktime(0, $entry["minutes"])) . " (<b>" . $cash . " Kč</b>)";
-
-                            if (isset($entry["tagId"])) {
-                                $cellContent .= renderTag($tags[$entry["tagId"]]);
-                                $contSums[$contract["id"]]["tags"][$entry["tagId"]]["minutes"] += $entry["minutes"];
-                                $contSums[$contract["id"]]["tags"][$entry["tagId"]]["cash"] += $cash;
-
-                                $monthSums["tags"][$entry["tagId"]]["minutes"] += $entry["minutes"];
-                                $monthSums["tags"][$entry["tagId"]]["cash"] += $cash;
-                            }
-
-                            $cellContent .= '<br><a class="mt-2 me-2 btn btn-outline-primary editBtn actionIdBtn"><i class="bi bi-pencil"></i></a>';
-                            $cellContent .= '<a class="mt-2 btn btn-outline-danger deleteBtn actionIdBtn"><i class="bi bi-trash"></i></a>';
-                        } else {
-                            $rowDate = DateTime::createFromFormat("Y-m-d", ($_POST["year"] . "-" . $_POST["month"] . "-" . $day));
-                            if (DateTime::createFromFormat("Y-m-d", $contract["dateStart"]) <= $rowDate && DateTime::createFromFormat("Y-m-d", $contract["dateEnd"]) >= $rowDate) {
-                                $cellContent .= '<a class="mt-2 btn btn-outline-success addBtn"><i class="bi bi-plus"></i></a>';
-                            }
-                        }
-
-                        $cellContent .= "</td>";
-
-                        $toRet .= $cellTag . ">" . $cellContent;
-                    }
-                    $sumsCell = $daySums != null ? (date('H:i', mktime(0, $daySums["minutes"])) . " (<b>" . $daySums["cash"] . " Kč</b>)") : "";
-                    echo '<tr><th scope="row">' . $day . "." . $_POST["month"] . '.</th>'  . $toRet . "<td>" . $sumsCell . "</td></tr>";
-                }
-
-                echo '<tr><th scope="row">Sumy</th>';
-                foreach ($contSums as $contSum) {
-                    $toRet = "<td>" . date('H:i', mktime(0, $contSum["minutes"])) . " (<b>" . $contSum["cash"] . " Kč</b>)";
-                    foreach ($contSum["tags"] as $key => $tag) {
-                        $toRet .= "<br>" . renderTag($tags[$key]) . " " . date('H:i', mktime(0, $tag["minutes"])) . " (<b>" . $tag["cash"] . " Kč</b>)";
-                    }
-                    echo $toRet . "</td>";
-                }
-                echo "<td></td></tr>";
-            }
-            
-            function renderTag($tag){
-                return ('<span class="ms-2 badge rounded-pill" style="background-color:#' . $tag["color"] . ';">' . ($tag["status"] == 0 ? '<i class="bi bi-exclamation-diamond-fill me-1 text-warning"></i>' : "") . $tag["label"] . "</span>"); 
-            }
-            ?>
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    </div>
     <h3 class="pt-3">Měsíční sumy</h3>
     <p>
         <?php
-        echo $monthSums != null ? (date('H:i', mktime(0, $monthSums["minutes"])) . " (<b>" . $monthSums["cash"] . " Kč</b>)") : "";
-        foreach($monthSums["tags"] as $key => $tag){
-            echo "<br>" . renderTag($tags[$key]) . " " . date('H:i', mktime(0, $tag["minutes"])) . " (<b>" . $tag["cash"] . " Kč</b>)";
+        if ($monthSums != null) {
+            echo date('H:i', mktime(0, $monthSums["minutes"])) . " (<b>" . $monthSums["cash"] . " Kč</b>)";
+            foreach ($monthSums["tags"] as $key => $tag) {
+                echo "<br>" . renderTag($tags[$key]) . " " . date('H:i', mktime(0, $tag["minutes"])) . " (<b>" . $tag["cash"] . " Kč</b>)";
+            }
+        } else {
+            echo "Vyberte zaměstnance, měsíc a rok.";
         }
         ?>
     </p>

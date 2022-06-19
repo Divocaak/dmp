@@ -40,26 +40,27 @@ if ($result = mysqli_query($link, $sql)) {
         <h1 class="d-inline-block ms-2">Seznam zaměstnanců</h1>
     </div>
     <a class="btn btn-outline-success" href="empForm.php?add=1"><i class="pe-2 bi bi-person-plus"></i>Přidat zaměstnance</a>
-    <table class="mt-3 table table-striped table-hover">
-        <caption>Seznam zaměstnanců</caption>
-        <thead class="table-dark">
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">Jméno</th>
-                <th scope="col">Datum narození</th>
-                <th scope="col">Student</th>
-                <th scope="col">Mateřská dovolená</th>
-                <th scope="col">HPP</th>
-                <th scope="col"></th>
-                <th scope="col"></th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php
-            unset($_SESSION["employees"]);
-            for ($i = 0; $i < count($employees); $i++) {
-                $_SESSION["employees"][$employees[$i]["id"]] = $employees[$i];
-                echo '<tr>
+    <div class="table-responsive">
+        <table class="mt-3 table table-striped table-hover">
+            <caption>Seznam zaměstnanců</caption>
+            <thead class="table-dark">
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Jméno</th>
+                    <th scope="col">Datum narození</th>
+                    <th scope="col">Student</th>
+                    <th scope="col">Mateřská dovolená</th>
+                    <th scope="col">HPP</th>
+                    <th scope="col"></th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                unset($_SESSION["employees"]);
+                for ($i = 0; $i < count($employees); $i++) {
+                    $_SESSION["employees"][$employees[$i]["id"]] = $employees[$i];
+                    echo '<tr>
                     <th scope="row">' . ($i + 1) . '</th>
                     <td>' . $employees[$i]["fname"] . ($employees[$i]["mname"] != null ? (" " . $employees[$i]["mname"]) : "") . " " . $employees[$i]["lname"] . '</td>
                     <td>' . $employees[$i]["bdate"] . '</td>
@@ -69,10 +70,11 @@ if ($result = mysqli_query($link, $sql)) {
                     <td><a class="btn btn-outline-primary" href="empForm.php?empId=' . $employees[$i]["id"] . '"><i class="bi bi-pencil"></i></a></td>
                     <td><a class="btn btn-outline-danger deleteBtn" data-emp-id="' . $employees[$i]["id"] . '"><i class="bi bi-person-x"></i></a></td>
                 </tr>';
-            }
-            ?>
-        </tbody>
-    </table>
+                }
+                ?>
+            </tbody>
+        </table>
+    </div>
     <div class="modal fade" id="confDeleteModal" tabindex="-1" aria-labelledby="confDeleteModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-sm modal-dialog-centered">
             <div class="modal-content">

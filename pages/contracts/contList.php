@@ -56,24 +56,25 @@ if ($result = mysqli_query($link, $sql)) {
         <h1 class="d-inline-block ms-2">Seznam pracovních vztahů</h1>
     </div>
     <a class="btn btn-outline-success" href="contForm.php"><i class="bi bi-person-workspace"></i><i class="ps-1 pe-2 bi bi-plus"></i>Přidat pracovní vztah</a>
-    <table class="mt-3 table table-striped table-hover">
-        <caption>Seznam smluv</caption>
-        <thead class="table-dark">
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">Limity</th>
-                <th scope="col">Zaměstnanec</th>
-                <th scope="col">Začátek poměru</th>
-                <th scope="col">Konec poměru</th>
-                <th scope="col">Hodinová mzda [Kč]</th>
-                <th scope="col"></th>
-                <th scope="col"></th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php
-            for ($i = 0; $i < count($contracts); $i++) {
-                echo '<tr">
+    <div class="table-responsive">
+        <table class="mt-3 table table-striped table-hover">
+            <caption>Seznam smluv</caption>
+            <thead class="table-dark">
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Limity</th>
+                    <th scope="col">Zaměstnanec</th>
+                    <th scope="col">Začátek poměru</th>
+                    <th scope="col">Konec poměru</th>
+                    <th scope="col">Hodinová mzda [Kč]</th>
+                    <th scope="col"></th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                for ($i = 0; $i < count($contracts); $i++) {
+                    echo '<tr">
                     <th scope="row">' . ($i + 1) . '</th>
                     <td>' . $contracts[$i]["cont"]["maxHours"] . " hodin, " . $contracts[$i]["cont"]["maxCash"] . ' Kč</td>
                     <td>' . $contracts[$i]["emp"]["fName"] . ($contracts[$i]["emp"]["mName"] != null ? (" " . $contracts[$i]["emp"]["mName"]) : "") . " " . $contracts[$i]["emp"]["lName"] . '</td>
@@ -83,10 +84,11 @@ if ($result = mysqli_query($link, $sql)) {
                     <td><a class="btn btn-outline-info detailBtn" data-cont-index="' . $i . '"><i class="bi bi-person-workspace pe-1"></i><i class="bi bi-eye"></i></a></td>
                     <td><a class="btn btn-outline-danger deleteBtn" data-cont-id="' . $contracts[$i]["cont"]["id"] . '"><i class="bi bi-person-workspace pe-1"></i><i class="bi bi-trash"></i></a></td>
                 </tr>';
-            }
-            ?>
-        </tbody>
-    </table>
+                }
+                ?>
+            </tbody>
+        </table>
+    </div>
     <div class="modal fade" id="confDeleteModal" tabindex="-1" aria-labelledby="confDeleteModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-sm modal-dialog-centered">
             <div class="modal-content">
@@ -127,7 +129,9 @@ if ($result = mysqli_query($link, $sql)) {
                             <p id="detailDocStart"></p>
                             <p id="detailDocEnd"></p>
                             <p id="detailDocCashRate"></p>
-                            <a id="detailDocFileBtn" class="btn btn-outline-info" href="" target="_blank"><i class="bi bi-eye"></i><p id="detailDocFileName"></p></a>
+                            <a id="detailDocFileBtn" class="btn btn-outline-info" href="" target="_blank"><i class="bi bi-eye"></i>
+                                <p id="detailDocFileName"></p>
+                            </a>
                         </div>
                     </div>
                 </div>
