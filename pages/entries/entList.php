@@ -129,9 +129,10 @@ if ($result = mysqli_query($link, $sql)) {
             <?php
             if (isset($_POST["month"])) {
                 $contSums = [];
+                $monthSums = [];
                 for ($day = 1; $day < cal_days_in_month(CAL_GREGORIAN, $_POST["month"], $_POST["year"]) + 1; $day++) {
                     $toRet = "";
-                    $sums = [];
+                    $daySums = [];
                     foreach ($contracts as $contract) {
                         $cellTag = "";
                         $cellContent = "";
@@ -143,11 +144,14 @@ if ($result = mysqli_query($link, $sql)) {
                             $entry = $entries[$entryCoords];
 
                             $cash = round(($entry["minutes"] * ($contract["cashRate"] / 60)), 1);
-                            $sums["minutes"] += $entry["minutes"];
-                            $sums["cash"] += $cash;
+                            $daySums["minutes"] += $entry["minutes"];
+                            $daySums["cash"] += $cash;
 
                             $contSums[$contract["id"]]["minutes"] += $entry["minutes"];
                             $contSums[$contract["id"]]["cash"] += $cash;
+
+                            $monthSums["minutes"] += $entry["minutes"];
+                            $monthSums["cash"] += $cash;
 
                             $cellTag .= " data-entry-id='" . $entry["id"] . "'";
                             $cellContent .= date('H:i', mktime(0, $entry["minutes"])) . " (<b>" . $cash . " Kč</b>)";
@@ -156,6 +160,9 @@ if ($result = mysqli_query($link, $sql)) {
                                 $cellContent .= renderTag($tags[$entry["tagId"]]);
                                 $contSums[$contract["id"]]["tags"][$entry["tagId"]]["minutes"] += $entry["minutes"];
                                 $contSums[$contract["id"]]["tags"][$entry["tagId"]]["cash"] += $cash;
+
+                                $monthSums["tags"][$entry["tagId"]]["minutes"] += $entry["minutes"];
+                                $monthSums["tags"][$entry["tagId"]]["cash"] += $cash;
                             }
 
                             $cellContent .= '<br><a class="mt-2 me-2 btn btn-outline-primary editBtn actionIdBtn"><i class="bi bi-pencil"></i></a>';
@@ -171,7 +178,7 @@ if ($result = mysqli_query($link, $sql)) {
 
                         $toRet .= $cellTag . ">" . $cellContent;
                     }
-                    $sumsCell = $sums != null ? (date('H:i', mktime(0, $sums["minutes"])) . " (<b>" . $sums["cash"] . " Kč</b>)") : "";
+                    $sumsCell = $daySums != null ? (date('H:i', mktime(0, $daySums["minutes"])) . " (<b>" . $daySums["cash"] . " Kč</b>)") : "";
                     echo '<tr><th scope="row">' . $day . "." . $_POST["month"] . '.</th>'  . $toRet . "<td>" . $sumsCell . "</td></tr>";
                 }
 
@@ -185,13 +192,22 @@ if ($result = mysqli_query($link, $sql)) {
                 }
                 echo "<td></td></tr>";
             }
-
+            
             function renderTag($tag){
                 return ('<span class="ms-2 badge rounded-pill" style="background-color:#' . $tag["color"] . ';">' . ($tag["status"] == 0 ? '<i class="bi bi-exclamation-diamond-fill me-1 text-warning"></i>' : "") . $tag["label"] . "</span>"); 
             }
             ?>
         </tbody>
     </table>
+    <h3 class="pt-3">Měsíční sumy</h3>
+    <p>
+        <?php
+        echo $monthSums != null ? (date('H:i', mktime(0, $monthSums["minutes"])) . " (<b>" . $monthSums["cash"] . " Kč</b>)") : "";
+        foreach($monthSums["tags"] as $key => $tag){
+            echo "<br>" . renderTag($tags[$key]) . " " . date('H:i', mktime(0, $tag["minutes"])) . " (<b>" . $tag["cash"] . " Kč</b>)";
+        }
+        ?>
+    </p>
     <div class="modal fade" id="confDeleteModal" tabindex="-1" aria-labelledby="confDeleteModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-sm modal-dialog-centered">
             <div class="modal-content">
