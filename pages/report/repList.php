@@ -1,59 +1,59 @@
 <?php
+require_once "../../config.php";
 /* 
 +-------------------+----------------------+-------------[0]------------+-------------[1]------------+------------[2]-----------+------------------[3]-----------------+---------------[4]-----------+--------------------------+--------------------+
 | hodiny ze smlouvy | hodinovka ze smlouvy | [input] musí být vyplaceno | [input] reálně odpracované | vyplatit = [1] * [input] | doplatky (modal btn, zobariz částku) | celkem vyplatit = [2] + [3] | vrátit klubu = [0] - [4] | vyrovnáno (switch) |
 +-------------------+----------------------+----------------------------+----------------------------+--------------------------+--------------------------------------+-----------------------------+--------------------------+--------------------+
 */
 
-/* 
-  +-------------+------------+------+-----+---------+-------+
-0 | id_contract | int        | NO   | PRI | NULL    |       |
-1 | to_pay      | float      | YES  |     | NULL    |       |
-2 | real_hours  | float      | YES  |     | NULL    |       |
-3 | real_to_pay | float      | YES  |     | NULL    |       |
-4 | resolved    | tinyint(1) | NO   |     | NULL    |       |
-  +-------------+------------+------+-----+---------+-------+
- */
-$reportObjects = [];
+$reportContract = [];
 $sql = "SELECT id_contract, to_pay, real_hours, real_to_pay, resolved FROM report_contract WHERE month=" . $_POST["month"] . " AND year=" . $_POST["year"] . ";";
 if ($result = mysqli_query($link, $sql)) {
     while ($row = mysqli_fetch_row($result)) {
-        $reportObjects[$row[0]] = [
+        $reportContract[$row[0]] = [
             "toPay" => $row[1],
             "realHours" => $row[2],
             "realToPay" => $row[3],
-            "resolved" => $row[4],
+            "resolved" => $row[4]
         ];
     }
+    mysqli_free_result($result);
 }
 
-/*
-______0____________1___________2____________3___________4_______5___________6______
-+-------------+-----------+----------+----------------+----+-----------+-----------+
-| id_employee | max_hours | max_cash | SUM(e.minutes) | id | label     | cash_rate |
-+-------------+-----------+----------+----------------+----+-----------+-----------+
-|           4 |        99 |    10000 |            804 |  2 | Smlouva 1 |       100 |
-|           4 |        50 |     5000 |             70 |  4 | kv2       |        50 |
-|           5 |       124 |   123123 |            853 |  6 | hfa       |       125 |
-+-------------+-----------+----------+----------------+----+-----------+-----------+
-*/
-$contractReports = [];
-$sql = "SELECT c.id_employee, c.max_hours, c.max_cash, SUM(e.minutes), d.id, d.label, d.cash_rate FROM contract c LEFT JOIN entry e ON e.id_contract=c.id RIGHT JOIN document d ON c.id_document=d.id 
-        WHERE YEAR(e.date)=" . $_POST["year"] . " AND MONTH(e.date)=" . $_POST["month"] . " GROUP BY c.id_employee, d.id, c.max_cash, c.max_hours;";
+$reportEmployee = [];
+$sql = "SELECT id_employee, additional_payment, resolved FROM report_employee WHERE month=" . $_POST["month"] . " AND year=" . $_POST["year"] . ";";
 if ($result = mysqli_query($link, $sql)) {
     while ($row = mysqli_fetch_row($result)) {
-        $contractReports[$row[0]] = [
-            $row[4] => [
-                "maxHours" => $row[1],
-                "maxCash" => $row[2],
-                "minutes" => $row[3],
-                "label" => $row[5],
-                "cashRate" => $row[6]
-            ]
+        $reportEmployee[$row[0]] = [
+            "additionalPayment" => $row[1],
+            "resolved" => $row[2]
         ];
     }
+    mysqli_free_result($result);
 }
 
+$reportData = [];
+$sql = "SELECT c.id_employee, c.max_hours, c.max_cash, SUM(e.minutes), c.id, d.label, d.cash_rate FROM contract c LEFT JOIN entry e ON e.id_contract=c.id RIGHT JOIN document d ON c.id_document=d.id 
+        WHERE YEAR(e.date)=" . $_POST["year"] . " AND MONTH(e.date)=" . $_POST["month"] . " GROUP BY c.id_employee, c.id, c.max_cash, c.max_hours;";
+if ($result = mysqli_query($link, $sql)) {
+    while ($row = mysqli_fetch_row($result)) {
+        if(!isset($reportData[$row[0]]["additionalPayment"]) && !isset($reportData[$row[0]]["resolved"])){
+            $reportData[$row[0]] = (isset($reportEmployee[$row[0]]) ? $reportEmployee[$row[0]] : ["additionalPayment" => 0, "resolved" => false]);
+        }
+        
+        $reportData[$row[0]]["contracts"][$row[4]] = [
+            "maxHours" => $row[1],
+            "maxCash" => $row[2],
+            "minutes" => $row[3],
+            "label" => $row[5],
+            "cashRate" => $row[6]
+        ];
+        $reportData[$row[0]]["contracts"][$row[4]] += (isset($reportContract[$row[4]]) ? $reportContract[$row[4]] : ["toPay" => 0, "realHours" => 0, "realToPay" => 0, "resolved" => false]);
+    }
+    mysqli_free_result($result);
+}
+
+echo json_encode($reportData);
 ?>
 
 <!DOCTYPE html>
@@ -101,7 +101,6 @@ if ($result = mysqli_query($link, $sql)) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-
 </body>
 
 </html>
