@@ -6,7 +6,6 @@ $minutes = ($_POST["realHours"] * 60) + $_POST["realMinutes"];
 $sql = "INSERT INTO report_contract (id_contract, month, year, real_hours) 
         VALUES (" . $_POST["rhContId"] . ", " . $_POST["rhMonth"] . ", " . $_POST["rhYear"] . ", " . $minutes . ") 
         ON DUPLICATE KEY UPDATE real_hours=" . $minutes . ";";
-echo $sql;
 if (!mysqli_query($link, $sql)) {
     $e = $sql . "<br>" . mysqli_error($link);
 }

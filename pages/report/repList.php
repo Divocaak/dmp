@@ -99,7 +99,7 @@ if ($result = mysqli_query($link, $sql)) {
     </form>
 
     <div class="table-responsive">
-        <table class="mt-3 table table-striped table-hover">
+        <table id="mainTable" class="mt-3 table" data-year="<?php echo $_POST["year"]; ?>" data-month="<?php echo $_POST["month"]; ?>">
             <caption>Souhrn</caption>
             <thead class="table-dark">
                 <tr>
@@ -113,15 +113,12 @@ if ($result = mysqli_query($link, $sql)) {
             </thead>
             <tbody>
                 <?php
-                /* 
-                +-------------------+----------------------+-------------[0]------------+-------------[1]------------+------------[2]-----------+------------------[3]-----------------+---------------[4]-----------+--------------------------+--------------------+
-                | hodiny ze smlouvy | hodinovka ze smlouvy | [input] musí být vyplaceno | [input] reálně odpracované | vyplatit = [1] * [input] | doplatky (modal btn, zobariz částku) | celkem vyplatit = [2] + [3] | vrátit klubu = [0] - [4] | vyrovnáno (switch) |
-                +-------------------+----------------------+----------------------------+----------------------------+--------------------------+--------------------------------------+-----------------------------+--------------------------+--------------------+
-                */
                 foreach ($reportData as $key => $report) {
-                    $row = '<tr data-emp-id=' . $key . '><th scope="row">' . $report["name"] . '</th>';
+                    $row = '<tr data-emp-id=' . $key . ' class="table-' . ($report["resolved"] ? "success" : "danger") . '"><th scope="row">' . $report["name"] . '</th>';
+                    $cashSum = 0;
+                    $toPay = 0;
                     if (count($report["contracts"]) > 0) {
-                        $row .= '<td><table class="table table-striped table-hover">
+                        $row .= '<td><table class="table">
                         <thead class="table-dark">
                             <tr>
                                 <th scope="col">Název</th>
@@ -135,18 +132,24 @@ if ($result = mysqli_query($link, $sql)) {
                         </thead>
                         <tbody>';
                         foreach ($report["contracts"] as $contKey => $contract) {
-                            $row .= '<tr data-cont-id=' . $contKey . '><th scope="row">' . $contract["label"] . '</th>';
+                            $toPayCont = round(($contract["minutes"] * ($contract["cashRate"] / 60)), 1);
+                            $toPay += $toPayCont;
+                            $row .= '<tr data-cont-id=' . $contKey . ' class="table-' . ($contract["resolved"] ? "success" : "danger") . '"><th scope="row">' . $contract["label"] . '</th>';
                             $row .= '<td>' . date('H:i', mktime(0, $contract["minutes"])) . ' / ' . $contract["maxHours"] . '</td>';
                             $row .= '<td>' . $contract["cashRate"] . ' Kč/h</td>';
-                            $row .= '<td>' . round(($contract["minutes"] * ($contract["cashRate"] / 60)), 1) . ' Kč</td>';
+                            $row .= '<td>' . $toPayCont . ' Kč</td>';
                             $row .= '<td>' . date('H:i', mktime(0, $contract["realHours"])) . '<a class="ms-2 btn btn-outline-primary rhBtn"><i class="bi bi-pencil"></i></a></td>';
                             $row .= '<td>' . $contract["realToPay"] . ' Kč<a class="ms-2 btn btn-outline-primary rcBtn"><i class="bi bi-pencil"></i></a></td>';
-                            $row .= '<td><div class="form-check form-switch"><input class="form-check-input" type="checkbox"></div></td>';
+                            $row .= '<td><div class="form-check form-switch"><input class="form-check-input contractSwitch" type="checkbox"' . ($contract["resolved"] ? " checked" : "") . '></div></td>';
+                            $cashSum += $contract["realToPay"];
                         }
                         $row .= '</tbody></table></td>';
                     }
+                    $fullSum = $cashSum + $report["additionalPayment"];
                     $row .= '<td>' . $report["additionalPayment"] . ' Kč <a class="ms-2 btn btn-outline-primary apBtn"><i class="bi bi-pencil"></i></a></td>';
-                    $row .= '<td><div class="form-check form-switch"><input class="form-check-input" type="checkbox"></div></td>';
+                    $row .= '<td>' . $fullSum . '</td>';
+                    $row .= '<td>' . ($toPay - $fullSum) . '</td>';
+                    $row .= '<td><div class="form-check form-switch"><input class="form-check-input reportSwitch" type="checkbox"' . ($report["resolved"] ? "checked" : "") . '></div></td>';
                     echo $row . '</tr>';
                 }
                 ?>
@@ -171,13 +174,13 @@ if ($result = mysqli_query($link, $sql)) {
                             </div>
                             <div class="col-4">
                                 <div class="form-floating mb-3 p-2">
-                                    <input type="text" class="form-control" id="rhMonth" name="rhMonth" readonly value="<?php echo $_POST["month"];?>">
+                                    <input type="text" class="form-control" id="rhMonth" name="rhMonth" readonly value="<?php echo $_POST["month"]; ?>">
                                     <label for="rhMonth">Měsíc</label>
                                 </div>
                             </div>
                             <div class="col-4">
                                 <div class="form-floating mb-3 p-2">
-                                    <input type="text" class="form-control" id="rhYear" name="rhYear" readonly value="<?php echo $_POST["year"];?>">
+                                    <input type="text" class="form-control" id="rhYear" name="rhYear" readonly value="<?php echo $_POST["year"]; ?>">
                                     <label for="rhYear">Rok</label>
                                 </div>
                             </div>
@@ -194,7 +197,7 @@ if ($result = mysqli_query($link, $sql)) {
                                 </div>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-outline-primary" id="realHoursFormSaveBtn">Uložit</button>
+                        <button type="submit" class="btn btn-outline-primary">Uložit</button>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -221,13 +224,13 @@ if ($result = mysqli_query($link, $sql)) {
                             </div>
                             <div class="col-4">
                                 <div class="form-floating mb-3 p-2">
-                                    <input type="text" class="form-control" id="rcMonth" name="rcMonth" readonly value="<?php echo $_POST["month"];?>">
+                                    <input type="text" class="form-control" id="rcMonth" name="rcMonth" readonly value="<?php echo $_POST["month"]; ?>">
                                     <label for="rcMonth">Měsíc</label>
                                 </div>
                             </div>
                             <div class="col-4">
                                 <div class="form-floating mb-3 p-2">
-                                    <input type="text" class="form-control" id="rcYear" name="rcYear" readonly value="<?php echo $_POST["year"];?>">
+                                    <input type="text" class="form-control" id="rcYear" name="rcYear" readonly value="<?php echo $_POST["year"]; ?>">
                                     <label for="rcYear">Rok</label>
                                 </div>
                             </div>
@@ -238,7 +241,7 @@ if ($result = mysqli_query($link, $sql)) {
                                 </div>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-outline-primary" id="realCahsFormSaveBtn">Uložit</button>
+                        <button type="submit" class="btn btn-outline-primary">Uložit</button>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -265,13 +268,13 @@ if ($result = mysqli_query($link, $sql)) {
                             </div>
                             <div class="col-4">
                                 <div class="form-floating mb-3 p-2">
-                                    <input type="text" class="form-control" id="apMonth" name="apMonth" readonly value="<?php echo $_POST["month"];?>">
+                                    <input type="text" class="form-control" id="apMonth" name="apMonth" readonly value="<?php echo $_POST["month"]; ?>">
                                     <label for="apMonth">Měsíc</label>
                                 </div>
                             </div>
                             <div class="col-4">
                                 <div class="form-floating mb-3 p-2">
-                                    <input type="text" class="form-control" id="apYear" name="apYear" readonly value="<?php echo $_POST["year"];?>">
+                                    <input type="text" class="form-control" id="apYear" name="apYear" readonly value="<?php echo $_POST["year"]; ?>">
                                     <label for="apYear">Rok</label>
                                 </div>
                             </div>
@@ -282,8 +285,24 @@ if ($result = mysqli_query($link, $sql)) {
                                 </div>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-outline-primary" id="additionalPaymentFormSaveBtn">Uložit</button>
+                        <button type="submit" class="btn btn-outline-primary">Uložit</button>
                     </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Zavřít</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="changeReportStatusResponseModal" tabindex="-1" aria-labelledby="changeReportStatusResponseModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Odpověď ze serveru</h5>
+                </div>
+                <div class="modal-body">
+                    <p id="changeReportStatusResponseText"></p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Zavřít</button>
@@ -296,30 +315,35 @@ if ($result = mysqli_query($link, $sql)) {
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
         $(document).ready(function() {
-            /* $(".actionIdBtn").click(function() {
-                entId = $(this).parent().data("entryId");
-            });
-
-            $(".addBtn, .editBtn").click(function() {
-                day = $(this).parent().data("day");
-                contId = $(this).parent().data("contractId");
-
-                showEntryForm($(this).hasClass("editBtn"));
-            }); */
-
             $(".rhBtn").click(function() {
                 $("#rhContId").val($(this).parent().parent().data("contId"));
                 $('#realHoursFormModal').modal('show');
             });
-            
+
             $(".rcBtn").click(function() {
                 $("#rcContId").val($(this).parent().parent().data("contId"));
                 $('#realCashFormModal').modal('show');
             });
-            
+
             $(".apBtn").click(function() {
                 $("#apEmpId").val($(this).parent().parent().data("empId"));
                 $('#additionalPaymentFormModal').modal('show');
+            });
+
+            $(".reportSwitch, .contractSwitch").click(function() {
+                $(this).parent().parent().parent().attr("class", ($(this).is(":checked") ? "table-success" : "table-danger"));
+
+                var contract = $(this).hasClass("reportSwitch"); 
+                $.post("changeReportStatus.php", {
+                    contract: !contract,
+                    month: $("#mainTable").data("month"),
+                    year: $("#mainTable").data("year"),
+                    id: $(this).parent().parent().parent().data((contract ? "emp" : "cont") + "Id"),
+                    status: $(this).is(":checked")
+                }, function(data) {
+                    $("#changeReportStatusResponseText").text(data);
+                    $("#changeReportStatusResponseModal").modal("show");
+                });
             });
         });
     </script>

@@ -5,7 +5,6 @@ $e = "";
 $sql = "INSERT INTO report_contract (id_contract, month, year, real_to_pay) 
         VALUES (" . $_POST["rcContId"] . ", " . $_POST["rcMonth"] . ", " . $_POST["rcYear"] . ", " . $_POST["realCash"] . ") 
         ON DUPLICATE KEY UPDATE real_to_pay=" . $_POST["realCash"] . ";";
-echo $sql;
 if (!mysqli_query($link, $sql)) {
     $e = $sql . "<br>" . mysqli_error($link);
 }

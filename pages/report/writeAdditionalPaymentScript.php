@@ -5,7 +5,6 @@ $e = "";
 $sql = "INSERT INTO report_employee (id_employee, month, year, additional_payment) 
         VALUES (" . $_POST["apEmpId"] . ", " . $_POST["apMonth"] . ", " . $_POST["apYear"] . ", " . $_POST["additionalPayment"] . ") 
         ON DUPLICATE KEY UPDATE additional_payment=" . $_POST["additionalPayment"] . ";";
-echo $sql;
 if (!mysqli_query($link, $sql)) {
     $e = $sql . "<br>" . mysqli_error($link);
 }
