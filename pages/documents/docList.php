@@ -38,26 +38,27 @@ if ($result = mysqli_query($link, $sql)) {
         <h1 class="d-inline-block ms-2">Seznam smluv</h1>
     </div>
     <a class="btn btn-outline-success" href="docForm.php?add=1"><i class="pe-2 bi bi-file-earmark-plus"></i>Přidat smlouvu</a>
-    <table class="mt-3 table table-striped table-hover">
-        <caption>Seznam smluv</caption>
-        <thead class="table-dark">
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">Název</th>
-                <th scope="col">Od</th>
-                <th scope="col">Do</th>
-                <th scope="col">Hodinová mzda [Kč/h]</th>
-                <th scope="col">Soubor</th>
-                <th scope="col"></th>
-                <th scope="col"></th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php
-            unset($_SESSION["documents"]);
-            for ($i = 0; $i < count($documents); $i++) {
-                $_SESSION["documents"][$documents[$i]["id"]] = $documents[$i];
-                echo '<tr>
+    <div class="table-responsive">
+        <table class="mt-3 table table-striped table-hover">
+            <caption>Seznam smluv</caption>
+            <thead class="table-dark">
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Název</th>
+                    <th scope="col">Od</th>
+                    <th scope="col">Do</th>
+                    <th scope="col">Hodinová mzda [Kč/h]</th>
+                    <th scope="col">Soubor</th>
+                    <th scope="col"></th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                unset($_SESSION["documents"]);
+                for ($i = 0; $i < count($documents); $i++) {
+                    $_SESSION["documents"][$documents[$i]["id"]] = $documents[$i];
+                    echo '<tr>
                     <th scope="row">' . ($i + 1) . '</th>
                     <td>' . $documents[$i]["label"] . '</td>
                     <td>' . $documents[$i]["dateStart"] . '</td>
@@ -70,10 +71,11 @@ if ($result = mysqli_query($link, $sql)) {
                     <td><a class="btn btn-outline-primary" href="docForm.php?docId=' . $documents[$i]["id"] . '"><i class="bi bi-pencil"></i></a></td>
                     <td><a class="btn btn-outline-danger deleteBtn" data-doc-id="' . $documents[$i]["id"] . '" data-doc-file="' . $documents[$i]["fileName"] . '"><i class="bi bi-file-earmark-x"></i></a></td>
                 </tr>';
-            }
-            ?>
-        </tbody>
-    </table>
+                }
+                ?>
+            </tbody>
+        </table>
+    </div>
     <div class="modal fade" id="confDeleteModal" tabindex="-1" aria-labelledby="confDeleteModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-sm modal-dialog-centered">
             <div class="modal-content">

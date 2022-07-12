@@ -38,6 +38,7 @@ if ($result = mysqli_query($link, $sql)) {
         <a class="btn btn-outline-primary" href="pages/contracts/contList.php"><i class="pe-2 bi bi-person-workspace"></i>Pracovní vztahy</a>
     </div>
     <a class="btn btn-outline-primary" href="pages/entries/entList.php"><i class="pe-2 bi bi-pen"></i>Zápis</a>
+    <a class="btn btn-outline-primary" href="pages/report/repList.php"><i class="pe-2 bi bi-graph-up"></i>Souhrn</a>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
 </body>
 
