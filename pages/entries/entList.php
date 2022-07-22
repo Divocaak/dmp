@@ -1,6 +1,18 @@
 <?php
 require_once "../../config.php";
 session_start();
+
+$_POST["month"] = !isset($_POST["month"]) ? $_SESSION['repListMonth'] : $_POST["month"];
+$_POST["year"] = !isset($_POST["year"]) ? $_SESSION['repListYear'] : $_POST["year"];
+$_POST["emp"] = !isset($_POST["emp"]) ? $_SESSION['repListEmp'] : $_POST["emp"];
+
+echo !isset($_POST["month"]) ? "sess" : "post";
+echo "<br>";
+print_r($_POST);
+print_r($_SESSION["repoListMonth"]);
+print_r($_SESSION["repoListYear"]);
+print_r($_SESSION["repoListEmp"]);
+
 $sql = "SELECT e.id, e.date, e.minutes, def.name, def.value, def.color, def.status, c.id
         FROM entry e LEFT JOIN defaults def ON e.id_category=def.name INNER JOIN contract c ON e.id_contract=c.id
         WHERE YEAR(e.date)=" . $_POST["year"] . " AND MONTH(e.date)=" . $_POST["month"] . " AND c.id_employee=" . $_POST["emp"] . ";";

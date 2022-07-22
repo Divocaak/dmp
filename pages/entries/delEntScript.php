@@ -1,6 +1,11 @@
 <?php
 require_once "../../config.php";
 
+session_start();
+$_SESSION['repListMonth'] = $_POST["month"];
+$_SESSION['repListYear'] = $_POST["year"];
+$_SESSION['repListEmp'] = $_POST["emp"];
+
 $e = "";
 $sql = "DELETE FROM entry WHERE id=" . $_GET["id"] . ";";
 if (!mysqli_query($link, $sql)) {

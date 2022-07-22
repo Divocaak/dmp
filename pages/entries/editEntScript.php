@@ -1,6 +1,11 @@
 <?php
 require_once "../../config.php";
 
+session_start();
+$_SESSION['repListMonth'] = $_POST["month"];
+$_SESSION['repListYear'] = $_POST["year"];
+$_SESSION['repListEmp'] = $_POST["emp"];
+
 $e = "";
 $minutes = ((floatval($_POST["hours"]) * 60) + floatval($_POST["minutes"]));
 if ($minutes > 0) {
