@@ -71,7 +71,7 @@ if ($result = mysqli_query($link, $sql)) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css">
 </head>
 
-<body class="text-center m-5 p-5">
+<body class="text-center m-md-5 p-md-5 mx-2 px-2 my-5">
     <div class="pb-3">
         <a class="btn btn-outline-secondary" href="../../index.php"><i class="pe-2 bi bi-arrow-left-circle"></i>Zpět</a>
         <h1 class="d-inline-block ms-2">Souhrn</h1>

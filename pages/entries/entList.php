@@ -65,14 +65,14 @@ if ($result = mysqli_query($link, $sql)) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css">
 </head>
 
-<body class="text-center m-5 p-5">
+<body class="text-center m-md-5 p-md-5 mx-2 px-2 my-5">
     <div class="pb-3">
         <a class="btn btn-outline-secondary" href="../../index.php"><i class="pe-2 bi bi-arrow-left-circle"></i>Zpět</a>
         <h1 class="d-inline-block ms-2">Zápis</h1>
     </div>
     <form class="needs-validation" novalidate action="?" method="post">
         <div class="row">
-            <div class="col">
+            <div class="col-6 col-md-3">
                 <div class="form-floating mb-3">
                     <select class="form-select form-control" id="emp" name="emp" required value="<?php echo isset($_POST["emp"]) ? $_POST["emp"] : ''; ?>">
                         <?php
@@ -93,7 +93,7 @@ if ($result = mysqli_query($link, $sql)) {
                     <label for="emp">Zaměstnanec</label>
                 </div>
             </div>
-            <div class="col">
+            <div class="col-6 col-md-3">
                 <div class="form-floating mb-3">
                     <select class="form-select form-control" id="month" name="month" required>
                         <?php
@@ -107,13 +107,13 @@ if ($result = mysqli_query($link, $sql)) {
                     <label for="month">Měsíc</label>
                 </div>
             </div>
-            <div class="col">
+            <div class="col-6 col-md-3">
                 <div class="form-floating mb-3">
                     <input type="number" class="form-control" id="year" name="year" required value="<?php echo isset($_POST["year"]) ? $_POST["year"] : date("Y"); ?>">
                     <label for="year">Rok</label>
                 </div>
             </div>
-            <div class="col">
+            <div class="col-6 col-md-3">
                 <button type="submit" class="btn btn-outline-primary"><i class="pe-1 bi bi-person-bounding-box"></i><i class="pe-2 bi bi-calendar-month"></i>Vybrat zaměstnance a měsíc</button>
             </div>
         </div>
