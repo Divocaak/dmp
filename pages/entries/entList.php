@@ -2,16 +2,13 @@
 require_once "../../config.php";
 session_start();
 
-$_POST["month"] = !isset($_POST["month"]) ? (isset($_SESSION['repListMonth']) ? $_SESSION['repListMonth'] : date("m")) : $_POST["month"];
-$_POST["year"] = !isset($_POST["year"]) ? (isset($_SESSION['repListYear']) ? $_SESSION['repListYear'] : date("Y")) : $_POST["year"];
-$_POST["emp"] = !isset($_POST["emp"]) ? (isset($_SESSION['repListEmp']) ? $_SESSION['repListEmp'] : 0) : $_POST["emp"];
+$_POST["month"] = !isset($_POST["month"]) ? (isset($_SESSION['entListMonth']) ? $_SESSION['entListMonth'] : date("m")) : $_POST["month"];
+$_POST["year"] = !isset($_POST["year"]) ? (isset($_SESSION['entListYear']) ? $_SESSION['entListYear'] : date("Y")) : $_POST["year"];
+$_POST["emp"] = !isset($_POST["emp"]) ? (isset($_SESSION['entListEmp']) ? $_SESSION['entListEmp'] : 0) : $_POST["emp"];
 
-echo !isset($_POST["month"]) ? "sess" : "post";
-echo "<br>";
-print_r($_POST);
-/* print_r($_SESSION["repListMonth"]);
-print_r($_SESSION["repListYear"]);
-print_r($_SESSION["repListEmp"]); */
+$_SESSION['entListMonth'] = $_POST["month"];
+$_SESSION['entListYear'] = $_POST["year"];
+$_SESSION['entListEmp'] = $_POST["emp"];
 
 $sql = "SELECT e.id, e.date, e.minutes, def.name, def.value, def.color, def.status, c.id
         FROM entry e LEFT JOIN defaults def ON e.id_category=def.name INNER JOIN contract c ON e.id_contract=c.id

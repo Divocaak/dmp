@@ -1,9 +1,12 @@
 <?php
 require_once "../../config.php";
+session_start();
 
-// TODO uncomment
-$_POST["month"] = !isset($_POST["month"]) ? 5/* date("m") */ : $_POST["month"];
-$_POST["year"] = !isset($_POST["year"]) ? 2022/* date("Y") */ : $_POST["year"];
+$_POST["month"] = !isset($_POST["month"]) ? (isset($_SESSION['repListMonth']) ? $_SESSION['repListMonth'] : date("m")) : $_POST["month"];
+$_POST["year"] = !isset($_POST["year"]) ? (isset($_SESSION['repListYear']) ? $_SESSION['repListYear'] : date("Y")) : $_POST["year"];
+
+$_SESSION['repListMonth'] = $_POST["month"];
+$_SESSION['repListYear'] = $_POST["year"];
 
 $reportContract = [];
 $sql = "SELECT id_contract, real_hours, real_to_pay, resolved FROM report_contract WHERE month=" . $_POST["month"] . " AND year=" . $_POST["year"] . ";";
