@@ -105,7 +105,7 @@ if ($result = mysqli_query($link, $sql)) {
             });
 
             $("#confDeleteBtn").click(function() {
-                window.location = "delDocScript?id=" + docId + "&file=" + docFile;
+                window.location = "delDocScript.php?id=" + docId + "&file=" + docFile;
             });
         });
     </script>

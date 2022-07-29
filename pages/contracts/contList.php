@@ -175,7 +175,7 @@ if ($result = mysqli_query($link, $sql)) {
             });
 
             $("#confDeleteBtn").click(function() {
-                window.location = "delContScript?id=" + contId;
+                window.location = "delContScript.php?id=" + contId;
             });
         });
     </script>

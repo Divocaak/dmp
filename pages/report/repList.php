@@ -1,15 +1,18 @@
 <?php
 require_once "../../config.php";
 
+// TODO uncomment
+$_POST["month"] = !isset($_POST["month"]) ? 5/* date("m") */ : $_POST["month"];
+$_POST["year"] = !isset($_POST["year"]) ? 2022/* date("Y") */ : $_POST["year"];
+
 $reportContract = [];
-$sql = "SELECT id_contract, to_pay, real_hours, real_to_pay, resolved FROM report_contract WHERE month=" . $_POST["month"] . " AND year=" . $_POST["year"] . ";";
+$sql = "SELECT id_contract, real_hours, real_to_pay, resolved FROM report_contract WHERE month=" . $_POST["month"] . " AND year=" . $_POST["year"] . ";";
 if ($result = mysqli_query($link, $sql)) {
     while ($row = mysqli_fetch_row($result)) {
         $reportContract[$row[0]] = [
-            "toPay" => $row[1],
-            "realHours" => $row[2],
-            "realToPay" => $row[3],
-            "resolved" => $row[4]
+            "realHours" => $row[1],
+            "realToPay" => $row[2],
+            "resolved" => $row[3]
         ];
     }
     mysqli_free_result($result);

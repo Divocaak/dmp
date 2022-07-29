@@ -102,7 +102,7 @@ if ($result = mysqli_query($link, $sql)) {
             });
 
             $("#confDeleteBtn").click(function() {
-                window.location = "delEmpScript?id=" + empId;
+                window.location = "delEmpScript.php?id=" + empId;
             });
         });
     </script>

@@ -120,7 +120,7 @@ if ($result = mysqli_query($link, $sql)) {
 
         $(document).ready(function() {
             $("#confDeleteBtn").click(function() {
-                window.location = "delTagScript?id=" + tagName;
+                window.location = "delTagScript.php?id=" + tagName;
             });
 
             $("#addTagBtn").click(function() {
