@@ -1,6 +1,15 @@
 <?php
 require_once "../../config.php";
 session_start();
+
+$_POST["month"] = !isset($_POST["month"]) ? (isset($_SESSION['entListMonth']) ? $_SESSION['entListMonth'] : date("m")) : $_POST["month"];
+$_POST["year"] = !isset($_POST["year"]) ? (isset($_SESSION['entListYear']) ? $_SESSION['entListYear'] : date("Y")) : $_POST["year"];
+$_POST["emp"] = !isset($_POST["emp"]) ? (isset($_SESSION['entListEmp']) ? $_SESSION['entListEmp'] : 0) : $_POST["emp"];
+
+$_SESSION['entListMonth'] = $_POST["month"];
+$_SESSION['entListYear'] = $_POST["year"];
+$_SESSION['entListEmp'] = $_POST["emp"];
+
 $sql = "SELECT e.id, e.date, e.minutes, def.name, def.value, def.color, def.status, c.id
         FROM entry e LEFT JOIN defaults def ON e.id_category=def.name INNER JOIN contract c ON e.id_contract=c.id
         WHERE YEAR(e.date)=" . $_POST["year"] . " AND MONTH(e.date)=" . $_POST["month"] . " AND c.id_employee=" . $_POST["emp"] . ";";
@@ -56,14 +65,14 @@ if ($result = mysqli_query($link, $sql)) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css">
 </head>
 
-<body class="text-center m-5 p-5">
+<body class="text-center m-md-5 p-md-5 mx-2 px-2 my-5">
     <div class="pb-3">
         <a class="btn btn-outline-secondary" href="../../index.php"><i class="pe-2 bi bi-arrow-left-circle"></i>Zpět</a>
         <h1 class="d-inline-block ms-2">Zápis</h1>
     </div>
     <form class="needs-validation" novalidate action="?" method="post">
         <div class="row">
-            <div class="col">
+            <div class="col-6 col-md-3">
                 <div class="form-floating mb-3">
                     <select class="form-select form-control" id="emp" name="emp" required value="<?php echo isset($_POST["emp"]) ? $_POST["emp"] : ''; ?>">
                         <?php
@@ -84,7 +93,7 @@ if ($result = mysqli_query($link, $sql)) {
                     <label for="emp">Zaměstnanec</label>
                 </div>
             </div>
-            <div class="col">
+            <div class="col-6 col-md-3">
                 <div class="form-floating mb-3">
                     <select class="form-select form-control" id="month" name="month" required>
                         <?php
@@ -98,13 +107,13 @@ if ($result = mysqli_query($link, $sql)) {
                     <label for="month">Měsíc</label>
                 </div>
             </div>
-            <div class="col">
+            <div class="col-6 col-md-3">
                 <div class="form-floating mb-3">
                     <input type="number" class="form-control" id="year" name="year" required value="<?php echo isset($_POST["year"]) ? $_POST["year"] : date("Y"); ?>">
                     <label for="year">Rok</label>
                 </div>
             </div>
-            <div class="col">
+            <div class="col-6 col-md-3">
                 <button type="submit" class="btn btn-outline-primary"><i class="pe-1 bi bi-person-bounding-box"></i><i class="pe-2 bi bi-calendar-month"></i>Vybrat zaměstnance a měsíc</button>
             </div>
         </div>
@@ -141,29 +150,73 @@ if ($result = mysqli_query($link, $sql)) {
                             $cellTag .= "<td data-day='" . $day . "' data-contract-id='" . $contract["id"] . "'";
                             $entryDay = ($day < 10 ? "0" : "") . $day;
                             $entryCoords = $entryDay . ";" . $contract["id"];
+
+                            if (!isset($contSums[$contract["id"]])) {
+                                $contSums[$contract["id"]]["minutes"] = 0;
+                                $contSums[$contract["id"]]["cash"] = 0;
+                            }
+
                             if (isset($entries[$entryCoords])) {
                                 $entry = $entries[$entryCoords];
 
                                 $cash = round(($entry["minutes"] * ($contract["cashRate"] / 60)), 1);
-                                $daySums["minutes"] += $entry["minutes"];
-                                $daySums["cash"] += $cash;
+
+                                if(!isset($daySums["minutes"])){
+                                    $daySums["minutes"] = $entry["minutes"];
+                                }else{
+                                    $daySums["minutes"] += $entry["minutes"];
+                                }
+
+                                if(!isset($daySums["cash"])){
+                                    $daySums["cash"] = $cash;
+                                }else{
+                                    $daySums["cash"] += $cash;
+                                }
 
                                 $contSums[$contract["id"]]["minutes"] += $entry["minutes"];
                                 $contSums[$contract["id"]]["cash"] += $cash;
 
-                                $monthSums["minutes"] += $entry["minutes"];
-                                $monthSums["cash"] += $cash;
+                                if(!isset($monthSums["minutes"])){
+                                    $monthSums["minutes"] = $entry["minutes"];
+                                }else{
+                                    $monthSums["minutes"] += $entry["minutes"];
+                                }
+
+                                if(!isset($monthSums["cash"])){
+                                    $monthSums["cash"] = $cash;
+                                }else{
+                                    $monthSums["cash"] += $cash;
+                                }
 
                                 $cellTag .= " data-entry-id='" . $entry["id"] . "'";
                                 $cellContent .= date('H:i', mktime(0, $entry["minutes"])) . " (<b>" . $cash . " Kč</b>)";
 
                                 if (isset($entry["tagId"])) {
                                     $cellContent .= renderTag($tags[$entry["tagId"]]);
-                                    $contSums[$contract["id"]]["tags"][$entry["tagId"]]["minutes"] += $entry["minutes"];
-                                    $contSums[$contract["id"]]["tags"][$entry["tagId"]]["cash"] += $cash;
 
-                                    $monthSums["tags"][$entry["tagId"]]["minutes"] += $entry["minutes"];
-                                    $monthSums["tags"][$entry["tagId"]]["cash"] += $cash;
+                                    if(!isset($contSums[$contract["id"]]["tags"][$entry["tagId"]]["minutes"])){
+                                        $contSums[$contract["id"]]["tags"][$entry["tagId"]]["minutes"] = $entry["minutes"];
+                                    }else{
+                                        $contSums[$contract["id"]]["tags"][$entry["tagId"]]["minutes"] += $entry["minutes"];
+                                    }
+
+                                    if(!isset($contSums[$contract["id"]]["tags"][$entry["tagId"]]["cash"])){
+                                        $contSums[$contract["id"]]["tags"][$entry["tagId"]]["cash"] = $cash;
+                                    }else{
+                                        $contSums[$contract["id"]]["tags"][$entry["tagId"]]["cash"] += $cash;
+                                    }
+
+                                    if(!isset($monthSums["tags"][$entry["tagId"]]["minutes"])){
+                                        $monthSums["tags"][$entry["tagId"]]["minutes"] = $entry["minutes"];
+                                    }else{
+                                        $monthSums["tags"][$entry["tagId"]]["minutes"] += $entry["minutes"];
+                                    }
+    
+                                    if(!isset($monthSums["tags"][$entry["tagId"]]["cash"])){
+                                        $monthSums["tags"][$entry["tagId"]]["cash"] = $cash;
+                                    }else{
+                                        $monthSums["tags"][$entry["tagId"]]["cash"] += $cash;
+                                    }
                                 }
 
                                 $cellContent .= '<br><a class="mt-2 me-2 btn btn-outline-primary editBtn actionIdBtn"><i class="bi bi-pencil"></i></a>';
@@ -186,8 +239,10 @@ if ($result = mysqli_query($link, $sql)) {
                     echo '<tr><th scope="row">Sumy</th>';
                     foreach ($contSums as $contSum) {
                         $toRet = "<td>" . date('H:i', mktime(0, $contSum["minutes"])) . " (<b>" . $contSum["cash"] . " Kč</b>)";
-                        foreach ($contSum["tags"] as $key => $tag) {
-                            $toRet .= "<br>" . renderTag($tags[$key]) . " " . date('H:i', mktime(0, $tag["minutes"])) . " (<b>" . $tag["cash"] . " Kč</b>)";
+                        if (isset($contSum["tags"])) {
+                            foreach ($contSum["tags"] as $key => $tag) {
+                                $toRet .= "<br>" . renderTag($tags[$key]) . " " . date('H:i', mktime(0, $tag["minutes"])) . " (<b>" . $tag["cash"] . " Kč</b>)";
+                            }
                         }
                         echo $toRet . "</td>";
                     }
@@ -205,7 +260,7 @@ if ($result = mysqli_query($link, $sql)) {
     <h3 class="pt-3">Měsíční sumy</h3>
     <p>
         <?php
-        if ($monthSums != null) {
+        if (isset($monthSums) && $monthSums != null) {
             echo date('H:i', mktime(0, $monthSums["minutes"])) . " (<b>" . $monthSums["cash"] . " Kč</b>)";
             foreach ($monthSums["tags"] as $key => $tag) {
                 echo "<br>" . renderTag($tags[$key]) . " " . date('H:i', mktime(0, $tag["minutes"])) . " (<b>" . $tag["cash"] . " Kč</b>)";
@@ -323,7 +378,7 @@ if ($result = mysqli_query($link, $sql)) {
             });
 
             $("#confDeleteBtn").click(function() {
-                window.location = "delEntScript?id=" + entId;
+                window.location = "delEntScript.php?id=" + entId;
             });
 
             $("#tagSelect").change(function() {
@@ -342,7 +397,7 @@ if ($result = mysqli_query($link, $sql)) {
                     contId: contId
                 }, function(data) {
                     var dataDecoded = JSON.parse(data);
-                    entFormValues(dataDecoded["id"], Math.floor(dataDecoded["minutes"] / 60), (dataDecoded["minutes"] % 60), dataDecoded["tag"]["id"]);
+                    entFormValues(dataDecoded["id"], Math.floor(dataDecoded["minutes"] / 60), (dataDecoded["minutes"] % 60), dataDecoded["tagId"]);
                 });
             } else {
                 entFormValues("-", "", "", "NULL");

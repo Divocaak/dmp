@@ -32,13 +32,13 @@ if ($result = mysqli_query($link, $sql)) {
 <body class="text-center m-5 p-5">
     <h1 class="pb-3">Vladykův dvůr IS</h1>
     <a class="btn btn-outline-secondary" href="pages/settings/settings.php"><i class="pe-2 bi bi-gear"></i>Nastavení</a>
-    <div class="py-3">
+    <div class="py-md-2 py-4">
         <a class="btn btn-outline-primary" href="pages/employees/empList.php"><i class="pe-2 bi bi-person"></i>Zaměstnanci</a>
-        <a class="btn btn-outline-primary" href="pages/documents/docList.php"><i class="pe-2 bi bi-file-earmark-text"></i>Smlouvy</a>
+        <a class="btn btn-outline-primary my-1" href="pages/documents/docList.php"><i class="pe-2 bi bi-file-earmark-text"></i>Smlouvy</a>
         <a class="btn btn-outline-primary" href="pages/contracts/contList.php"><i class="pe-2 bi bi-person-workspace"></i>Pracovní vztahy</a>
     </div>
     <a class="btn btn-outline-primary" href="pages/entries/entList.php"><i class="pe-2 bi bi-pen"></i>Zápis</a>
-    <a class="btn btn-outline-primary" href="pages/report/repList.php"><i class="pe-2 bi bi-graph-up"></i>Souhrn</a>
+    <a class="btn btn-outline-primary my-1" href="pages/report/repList.php"><i class="pe-2 bi bi-graph-up"></i>Souhrn</a>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
 </body>
 

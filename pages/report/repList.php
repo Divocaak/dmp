@@ -1,15 +1,21 @@
 <?php
 require_once "../../config.php";
+session_start();
+
+$_POST["month"] = !isset($_POST["month"]) ? (isset($_SESSION['repListMonth']) ? $_SESSION['repListMonth'] : date("m")) : $_POST["month"];
+$_POST["year"] = !isset($_POST["year"]) ? (isset($_SESSION['repListYear']) ? $_SESSION['repListYear'] : date("Y")) : $_POST["year"];
+
+$_SESSION['repListMonth'] = $_POST["month"];
+$_SESSION['repListYear'] = $_POST["year"];
 
 $reportContract = [];
-$sql = "SELECT id_contract, to_pay, real_hours, real_to_pay, resolved FROM report_contract WHERE month=" . $_POST["month"] . " AND year=" . $_POST["year"] . ";";
+$sql = "SELECT id_contract, real_hours, real_to_pay, resolved FROM report_contract WHERE month=" . $_POST["month"] . " AND year=" . $_POST["year"] . ";";
 if ($result = mysqli_query($link, $sql)) {
     while ($row = mysqli_fetch_row($result)) {
         $reportContract[$row[0]] = [
-            "toPay" => $row[1],
-            "realHours" => $row[2],
-            "realToPay" => $row[3],
-            "resolved" => $row[4]
+            "realHours" => $row[1],
+            "realToPay" => $row[2],
+            "resolved" => $row[3]
         ];
     }
     mysqli_free_result($result);
@@ -65,7 +71,7 @@ if ($result = mysqli_query($link, $sql)) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css">
 </head>
 
-<body class="text-center m-5 p-5">
+<body class="text-center m-md-5 p-md-5 mx-2 px-2 my-5">
     <div class="pb-3">
         <a class="btn btn-outline-secondary" href="../../index.php"><i class="pe-2 bi bi-arrow-left-circle"></i>Zpět</a>
         <h1 class="d-inline-block ms-2">Souhrn</h1>

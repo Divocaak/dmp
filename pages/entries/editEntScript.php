@@ -4,7 +4,7 @@ require_once "../../config.php";
 $e = "";
 $minutes = ((floatval($_POST["hours"]) * 60) + floatval($_POST["minutes"]));
 if ($minutes > 0) {
-    $sql = "UPDATE entry SET minutes=" . $minutes . ", id_category=" . $_POST["tagSelect"] . " WHERE id=" . $_POST["id"] . ";";
+    $sql = "UPDATE entry SET minutes=" . $minutes . (isset($_POST["tagSelect"]) ? ", id_category=" . $_POST["tagSelect"] : "") . " WHERE id=" . $_POST["id"] . ";";
     if (!mysqli_query($link, $sql)) {
         $e = $sql . "<br>" . mysqli_error($link);
     }
